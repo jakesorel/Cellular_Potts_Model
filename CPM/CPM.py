@@ -21,7 +21,6 @@ class Cell:
         self.P0 = []
         self.SI = []
 
-
         self.centroid_t_ = []
 
         self.lambd_P = []
