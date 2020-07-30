@@ -12,4 +12,4 @@
 
 source activate apical_domain
 
-python CPM/CPM_ND_cluster "$1" "$2" "$3" "$4"
+python CPM/CPM_ND_cluster.py "$1" "$2" "$3" "$4"
