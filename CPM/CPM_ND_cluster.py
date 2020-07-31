@@ -37,13 +37,14 @@ def do_job(inputt):
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = T
     cpm.I0 = cpm.I
-    cpm.run_simulation(int(1e4), int(2e2), polarise=False)
+    cpm.run_simulation(int(1e2), int(1e1), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
 if __name__ == "__main__":
     # if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
     #     os.makedirs("/central/scratch/jakecs/Cellular_Potts_Model/results")
+    np.set_printoptions(formatter={'float_kind': '{:f}'.format})
     n_iter = int(sys.argv[1])
     n_param_step = int(sys.argv[2])
     N_job = int(sys.argv[3])
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     rep_space = np.arange(n_iter)
     PP,RR,BB,TT,NN = np.meshgrid(p0_space, r0_space, beta_space, T_space,rep_space,indexing="ij")
     inputs = np.array([PP.ravel()[i_job::N_job],RR.ravel()[i_job::N_job],BB.ravel()[i_job::N_job],TT.ravel()[i_job::N_job],np.arange(NN.size)[i_job::N_job]]).T
-    n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
+    n_slurm_tasks = 8#int(os.environ["SLURM_NTASKS"])
     client = Client(threads_per_worker=1, n_workers=n_slurm_tasks)
     lazy_results = []
     for inputt in inputs:
