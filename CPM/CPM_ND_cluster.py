@@ -23,7 +23,7 @@ def get_normal_params(p0, r, beta, gamma,A0):
 
 
 def do_job(inputt):
-    p0,r,beta,T,i = inputt
+    p0,r,beta,T,Id = inputt
     cpm = CPM()
     cpm.make_grid(100, 100)
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
@@ -39,7 +39,7 @@ def do_job(inputt):
     cpm.I0 = cpm.I
     cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    save_npz("results/I_save_%d.npz"%i, I_SAVE)
+    save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
 if __name__ == "__main__":
     # if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
