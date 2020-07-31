@@ -686,7 +686,11 @@ class CPM:
         if self.A0_div is None:
             for ni in range(n_steps):
                 for k in range(len(self.xy_clls_tup)):
-                    I = do_step(I)
+                    try:
+                        I = do_step(I)
+                    except AttributeError:
+                        I = np.ones_like(I)*-1
+                        break
                 if i_save[ni]:
                     print(np.round(ni/n_steps * 100),"%")
                     I_save[ns] = I

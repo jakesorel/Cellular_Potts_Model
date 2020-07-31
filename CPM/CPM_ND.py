@@ -25,14 +25,11 @@ def get_normal_params(p0, r, beta, gamma,A0):
     return lambda_A,lambda_P,W,P0,A0
 
 
-lambdA = 2
-lambdP = 50
-
 
 cpm = CPM()
 
 cpm.make_grid(100,100)
-lambda_A,lambda_P,W,P0,A0 = get_normal_params(p0=8, r=100, beta=0.5, gamma=0,A0=30)
+lambda_A,lambda_P,W,P0,A0 = get_normal_params(p0=0, r=1, beta=0.5, gamma=0,A0=30)
 cpm.lambd_A = lambda_A
 cpm.lambd_P = lambda_P
 cpm.P0 = P0

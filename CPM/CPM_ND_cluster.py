@@ -60,3 +60,5 @@ if __name__ == "__main__":
         lazy_results.append(lazy_result)
     dask.compute(*lazy_results)
 
+
+"""getting some strange errors. As a fail-safe, fix the dodgy LA.any() = None issue by catching the error"""
