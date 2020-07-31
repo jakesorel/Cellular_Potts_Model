@@ -689,7 +689,6 @@ class CPM:
                     try:
                         I = do_step(I)
                     except AttributeError:
-                        I = np.ones_like(I)*-1
                         break
                 if i_save[ni]:
                     print(np.round(ni/n_steps * 100),"%")
