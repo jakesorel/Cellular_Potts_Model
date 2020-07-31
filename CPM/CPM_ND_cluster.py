@@ -39,11 +39,11 @@ def do_job(inputt):
     cpm.I0 = cpm.I
     cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    save_npz("central/scratch/jakecs/self-organisation-mouse/results/I_save_%d.npz"%i, I_SAVE)
+    save_npz("/central/scratch/jakecs/Cellular_Potts_Model/results/I_save_%d.npz"%i, I_SAVE)
 
 if __name__ == "__main__":
-    if not os.path.exists("central/scratch/jakecs/self-organisation-mouse/results"):
-        os.makedirs("central/scratch/jakecs/self-organisation-mouse/results")
+    if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
+        os.makedirs("/central/scratch/jakecs/Cellular_Potts_Model/results")
     n_iter = int(sys.argv[1])
     n_param_step = int(sys.argv[2])
     N_job = int(sys.argv[3])
