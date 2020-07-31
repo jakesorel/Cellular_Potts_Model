@@ -163,7 +163,7 @@ class CPM:
         self.num_x,self.num_y = num_x,num_y
         self.I = np.zeros([num_x,num_y]).astype(int)
         self.boundary_mask = np.ones_like(self.I).astype(bool)
-        self.boundary_mask[0],self.boundary_mask[:,0],self.boundary_mask[-1],self.boundary_mask[:,-1] = True,True,True,True
+        self.boundary_mask[0],self.boundary_mask[:,0],self.boundary_mask[-1],self.boundary_mask[:,-1] = False,False,False,False
 
     def generate_cells(self,N_cell_dict):
         self.cells = [Cell(0,"M")]
@@ -270,7 +270,15 @@ class CPM:
     #     return z,Na
     #
     def get_z(self,I,i,j,s):
-        return _get_z(I,i,j,s)
+        try:
+            out = _get_z(I,i,j,s)
+            return out
+        except IndexError:
+            plt.imshow(I)
+            plt.show()
+            print(I,i,j,s)
+
+
         # Na = I[i-1:i+2,j-1:j+2]
         # Ni = Na[self.chooses2i, self.chooses2j]
         # z = sum(Ni==s)
@@ -546,13 +554,23 @@ class CPM:
 
     def get_xy_clls(self,I):
         """Only VN neighbours r.e. the D_a """
+        # self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
+        # x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
+        # self.n_clls = x_clls.size
+        # self.xy_clls = set([])
+        # for i in range(self.n_clls):
+        #     self.xy_clls.add((x_clls[i], y_clls[i]))
+        # self.xy_clls_tup = tuple(self.xy_clls)
+
+        ##UPDATE: ignore boundary cells
         self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
-        x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
+        x_clls, y_clls = np.where((self.get_perimeter_elements(I) != 0)*(self.boundary_mask))
         self.n_clls = x_clls.size
         self.xy_clls = set([])
         for i in range(self.n_clls):
             self.xy_clls.add((x_clls[i], y_clls[i]))
         self.xy_clls_tup = tuple(self.xy_clls)
+
 
 
     def update_xy_clls(self,i,j,z,LA,I,I2):

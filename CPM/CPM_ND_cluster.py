@@ -21,7 +21,6 @@ def get_normal_params(p0, r, beta, gamma,A0):
     return lambda_A,lambda_P,W,P0,A0
 
 
-
 def do_job(inputt):
     p0,r,beta,T,Id = inputt
     cpm = CPM()
@@ -44,7 +43,6 @@ def do_job(inputt):
 if __name__ == "__main__":
     # if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
     #     os.makedirs("/central/scratch/jakecs/Cellular_Potts_Model/results")
-    np.set_printoptions(formatter={'float_kind': '{:f}'.format})
     n_iter = int(sys.argv[1])
     n_param_step = int(sys.argv[2])
     N_job = int(sys.argv[3])

@@ -26,48 +26,76 @@ def get_normal_params(p0, r, beta, gamma,A0):
 
 
 
-cpm = CPM()
 
-cpm.make_grid(100,100)
-lambda_A,lambda_P,W,P0,A0 = get_normal_params(p0=0, r=1, beta=0.5, gamma=0,A0=30)
-cpm.lambd_A = lambda_A
-cpm.lambd_P = lambda_P
-cpm.P0 = P0
-cpm.A0 = A0
-cpm.generate_cells(N_cell_dict={"E":12,"T":12})
-cpm.set_lambdP(np.array([0.0,lambda_P,lambda_P]))
-cpm.make_J(W)#,sigma = np.ones_like(W)*0.2)
-cpm.make_init("circle",np.sqrt(cpm.A0/np.pi)*0.8,np.sqrt(cpm.A0/np.pi)*0.2)
-cpm.T = 100
-cpm.I0 = cpm.I
-I = cpm.run_simulation(int(5e2),50,polarise=False)
+def do_job(inputt):
+    p0,r,beta,T,Id = inputt
+    cpm = CPM()
+    cpm.make_grid(100, 100)
+    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
+    cpm.lambd_A = lambda_A
+    cpm.lambd_P = lambda_P
+    cpm.P0 = P0
+    cpm.A0 = A0
+    cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
+    cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
+    cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
+    cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
+    cpm.T = T
+    cpm.I0 = cpm.I
+    cpm.run_simulation(int(1e4), int(2e2), polarise=False)
+    cpm.animate()
+    # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
+    # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
+input = [3.00000000e+00, 3.72759372e+00, 2.85714286e-01, 1.00000000e+02,1.21100000e+03]
+do_job(input)
 
-
-cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
-
-cpm.animate()
-
-cpm.get_centroids_t()
-cpm.get_neighbourhood_index2()
-fig, ax = plt.subplots()
-ax.scatter(np.arange(cpm.I_save.shape[0]),cpm.neighbourhood_percentage[:,0],color="r",s=4)
-ax.scatter(np.arange(cpm.I_save.shape[0]),cpm.neighbourhood_percentage[:,1],color="b",s=4)
-ax.set(ylabel="% self-self neighbours")
-fig.show()
-
-
-"""Make code to:
-• 12,12 ES and TS
-• Span parameter space: p0, r, beta, T 
-• Repeat n=10 times
-• Save output: need I_save and  id <--> type matrix (identical in all)"""
-
-from scipy.sparse import csc_matrix, save_npz
-I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x,cpm.num_y*cpm.I_save.shape[0])))
-save_npz("I_save.npz",I_SAVE)
+"""Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """
 
 #
+#
+# cpm = CPM()
+#
+# cpm.make_grid(100,100)
+# lambda_A,lambda_P,W,P0,A0 = get_normal_params(p0=0, r=1, beta=0.5, gamma=0,A0=30)
+# cpm.lambd_A = lambda_A
+# cpm.lambd_P = lambda_P
+# cpm.P0 = P0
+# cpm.A0 = A0
+# cpm.generate_cells(N_cell_dict={"E":12,"T":12})
+# cpm.set_lambdP(np.array([0.0,lambda_P,lambda_P]))
+# cpm.make_J(W)#,sigma = np.ones_like(W)*0.2)
+# cpm.make_init("circle",np.sqrt(cpm.A0/np.pi)*0.8,np.sqrt(cpm.A0/np.pi)*0.2)
+# cpm.T = 100
+# cpm.I0 = cpm.I
+# I = cpm.run_simulation(int(5e2),50,polarise=False)
+#
+#
+#
+# cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+#
+# cpm.animate()
+#
+# cpm.get_centroids_t()
+# cpm.get_neighbourhood_index2()
+# fig, ax = plt.subplots()
+# ax.scatter(np.arange(cpm.I_save.shape[0]),cpm.neighbourhood_percentage[:,0],color="r",s=4)
+# ax.scatter(np.arange(cpm.I_save.shape[0]),cpm.neighbourhood_percentage[:,1],color="b",s=4)
+# ax.set(ylabel="% self-self neighbours")
+# fig.show()
+#
+#
+# """Make code to:
+# • 12,12 ES and TS
+# • Span parameter space: p0, r, beta, T
+# • Repeat n=10 times
+# • Save output: need I_save and  id <--> type matrix (identical in all)"""
+#
+# from scipy.sparse import csc_matrix, save_npz
+# I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x,cpm.num_y*cpm.I_save.shape[0])))
+# save_npz("I_save.npz",I_SAVE)
+#
+# #
 
 #
 # I = np.zeros([7,7])
