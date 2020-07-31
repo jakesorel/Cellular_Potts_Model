@@ -42,8 +42,8 @@ def do_job(inputt):
     save_npz("/central/scratch/jakecs/Cellular_Potts_Model/results/I_save_%d.npz"%i, I_SAVE)
 
 if __name__ == "__main__":
-    if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
-        os.makedirs("/central/scratch/jakecs/Cellular_Potts_Model/results")
+    # if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
+    #     os.makedirs("/central/scratch/jakecs/Cellular_Potts_Model/results")
     n_iter = int(sys.argv[1])
     n_param_step = int(sys.argv[2])
     N_job = int(sys.argv[3])
