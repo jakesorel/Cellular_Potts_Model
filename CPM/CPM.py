@@ -706,7 +706,7 @@ class CPM:
                 for k in range(len(self.xy_clls_tup)):
                     try:
                         I = do_step(I)
-                    except AttributeError or IndexError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
+                    except AttributeError or IndexError or TypeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
                         break
                 if i_save[ni]:
                     print(np.round(ni/n_steps * 100),"%")
