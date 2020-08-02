@@ -47,7 +47,8 @@ def do_job(inputt):
     # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
-input = [3.00000000e+00, 3.72759372e+00, 2.85714286e-01, 1.00000000e+02,1.21100000e+03]
+input = np.array([4.00000000e+00, 1.38949549e+01, 1.00000000e+00, 1.00000000e+02,
+       6.65400000e+03])
 do_job(input)
 
 """Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """

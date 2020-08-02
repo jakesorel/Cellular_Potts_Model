@@ -450,7 +450,7 @@ class CPM:
 
 
     def get_s2(self,I,i,j):
-        return _get_s2(I,i,j)
+        return _get_s2(I,i,j,self.num_x,self.num_y)
 
     def get_s2_pol(self,I,i,j):
         return _get_s2_pol(I,i,j)
@@ -554,22 +554,22 @@ class CPM:
 
     def get_xy_clls(self,I):
         """Only VN neighbours r.e. the D_a """
-        # self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
-        # x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
-        # self.n_clls = x_clls.size
-        # self.xy_clls = set([])
-        # for i in range(self.n_clls):
-        #     self.xy_clls.add((x_clls[i], y_clls[i]))
-        # self.xy_clls_tup = tuple(self.xy_clls)
-
-        ##UPDATE: ignore boundary cells
         self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
-        x_clls, y_clls = np.where((self.get_perimeter_elements(I) != 0)*(self.boundary_mask))
+        x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
         self.n_clls = x_clls.size
         self.xy_clls = set([])
         for i in range(self.n_clls):
             self.xy_clls.add((x_clls[i], y_clls[i]))
         self.xy_clls_tup = tuple(self.xy_clls)
+
+        # ##UPDATE: ignore boundary cells
+        # self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
+        # x_clls, y_clls = np.where((self.get_perimeter_elements(I) != 0)*(self.boundary_mask))
+        # self.n_clls = x_clls.size
+        # self.xy_clls = set([])
+        # for i in range(self.n_clls):
+        #     self.xy_clls.add((x_clls[i], y_clls[i]))
+        # self.xy_clls_tup = tuple(self.xy_clls)
 
 
 
@@ -1066,13 +1066,13 @@ def _get_z(I,i,j,s):
 #     return np.random.choice(opts)
 
 @jit(cache=True, nopython=True)
-def _get_s2(I, i, j):
+def _get_s2(I, i, j,num_x,num_y):
     neighbour_options = np.array([[ 1,  0],
                                    [-1,  0],
                                    [ 0,  1],
                                    [ 0, -1]])
     ni = neighbour_options[int(np.random.random()*4)]
-    s2 = I[ni[0]+i,ni[1]+j]
+    s2 = I[np.mod(ni[0]+i,num_x),np.mod(ni[1]+j,num_y)]
     return s2
 
 
