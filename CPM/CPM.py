@@ -271,7 +271,7 @@ class CPM:
     #
     def get_z(self,I,i,j,s):
         try:
-            out = _get_z(I,i,j,s,self.num_x,self.num_y)
+            out = _get_z(I,i,j,s)
             return out
         except IndexError:
             plt.imshow(I)
@@ -373,7 +373,7 @@ class CPM:
     #     return dJ
 
     def get_dJ(self,I, I2, i, j, s, s2):
-        return _get_dJ(self.J, I, I2, i, j, s, s2,self.num_x,self.num_y)
+        return _get_dJ(self.J, I, I2, i, j, s, s2)
 
     def get_dJ_pol(self,I, I2, i, j, s, s2,ii,jj):
         if self.cells[s].cell_pol:
@@ -574,17 +574,16 @@ class CPM:
 
 
     def update_xy_clls(self,i,j,z,LA,I,I2):
-        Pa = per_box(self.PE,i,j,self.num_x,self.num_y).copy()
+        Pa = self.PE[i-1:i+2,j-1:j+2].copy()
         if z is None:
             z,Na = self.get_z(I,i,j,0)
-            b_change = -self.mask_b*(Na!=0) + self.mask_b*(per_box(I2,i,j,self.num_x,self.num_y)==0)
+            b_change = -self.mask_b*(Na!=0) + self.mask_b*(I2[i-1:i+2,j-1:j+2]==0)
             b_change[1,1] = -4+2*z
         else:
             b_change = self.b_change[z][LA]
 
-        self.PE = per_assign(self.PE,i,j,self.num_x,self.num_y,Pa + b_change)
-        # self.PE[i-1:i+2,j-1:j+2] = Pa + b_change
-        Pa_new = per_box(self.PE,i,j,self.num_x,self.num_y)
+        self.PE[i-1:i+2,j-1:j+2] = Pa + b_change
+        Pa_new = self.PE[i - 1:i + 2, j - 1:j + 2]
 
         rm_xy_clls = (Pa_new==0)*(Pa!=0)
         add_xy_clls = (Pa_new!=0)*(Pa==0)
@@ -707,8 +706,8 @@ class CPM:
                 for k in range(len(self.xy_clls_tup)):
                     try:
                         I = do_step(I)
-                    except AttributeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
-                        I = I
+                    except AttributeError or IndexError or TypeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
+                        break
                 if i_save[ni]:
                     print(np.round(ni/n_steps * 100),"%")
                     I_save[ns] = I
@@ -1054,19 +1053,10 @@ def sum_axis12(X):
     return X_out
 
 
-@jit(cache=True,nopython=True)
-def per_box(X,i,j,num_x,num_y):
-    return X[np.mod(np.arange(i - 1, i + 2), num_x)][:, np.mod(np.arange(j - 1, j + 2), num_y)]
-
-@jit(cache=True,nopython=True)
-def per_assign(X,i,j,num_x,num_y,Sample):
-    X[np.mod(np.arange(i - 1, i + 2), num_x)][:, np.mod(np.arange(j - 1, j + 2), num_y)] = Sample
-    return X
-
 
 @jit(cache=True, nopython=True)
-def _get_z(I,i,j,s,num_x,num_y):
-    Na = per_box(I,i,j,num_x,num_y)
+def _get_z(I,i,j,s):
+    Na = I[i-1:i+2,j-1:j+2]
     z = 4-np.count_nonzero(Na.take([1,3,5,7]) - s)
     return z,Na
 
@@ -1173,9 +1163,9 @@ def _H(A, P, lambda_A, lambda_P, A0, P0):
 #
 
 @jit(cache=True, nopython=True)
-def _get_dJ(J,I, I2, i, j, s, s2,num_x,num_y):
-    Na = per_box(I,i,j,num_x,num_y).take([0,1,2,3,5,6,7,8])
-    Na2 = per_box(I2,i,j,num_x,num_y).take([0,1,2,3,5,6,7,8])
+def _get_dJ(J,I, I2, i, j, s, s2):
+    Na = I[i - 1:i + 2, j - 1:j + 2].take([0,1,2,3,5,6,7,8])
+    Na2 = I2[i - 1:i + 2, j - 1:j + 2].take([0,1,2,3,5,6,7,8])
     dJ = 0
     for k in range(8):
         dJ += J[s2,Na2[k]] - J[s,Na[k]]
