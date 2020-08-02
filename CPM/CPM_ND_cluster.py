@@ -52,7 +52,7 @@ if __name__ == "__main__":
     PP,RR,BB,TT,NN = np.meshgrid(p0_space, r0_space, beta_space, T_space,rep_space,indexing="ij")
     inputs = np.array([PP.ravel()[i_job::N_job],RR.ravel()[i_job::N_job],BB.ravel()[i_job::N_job],TT.ravel()[i_job::N_job],np.arange(NN.size)[i_job::N_job]]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
-    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks)
+    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []
     for inputt in inputs:
         lazy_result = dask.delayed(do_job)(inputt)
