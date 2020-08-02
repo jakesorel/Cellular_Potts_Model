@@ -274,8 +274,10 @@ class CPM:
             out = _get_z(I,i,j,s)
             return out
         except IndexError:
-            plt.imshow(I)
-            plt.show()
+            fig, ax = plt.subplots(1,2)
+            ax[0].imshow(self.PE!=0)
+            ax[1].imshow(I)
+            fig.show()
             print(I,i,j,s)
 
 
@@ -473,43 +475,46 @@ class CPM:
 
     def do_step(self,I):
         i, j = random.choice(self.xy_clls_tup)
-        #Pick a site i,j, State is s
-        s = I[i,j]
-
-
-        s2 = self.get_s2(I,i,j)
-        if s2 == s:
+        if (i*j==0) or ((i-self.num_x+1)*(j-self.num_y+1)==0):
             return I
-        elif s==0:
-            z2, Na = self.get_z(I,i,j,s2)
-            LA2 = self.LA(s2,Na,z2)
-            if LA2.any():
-                dH, I2 = self.get_dH(I,i,j,s,s2,None,z2,None,LA2)
-                # print(LA)
-                return self.perform_transform(dH,I,I2,s,s2,None,None,i,j)
-            else:
-                return I
-        elif s2==0:
-            z, Na = self.get_z(I,i,j,s)
-            LA = self.LA(s,Na,z)
-            if LA.any():
-                dH, I2 = self.get_dH(I, i, j, s, s2,z,None,LA,None)
-                return self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
-            else:
-                return I
         else:
-            z, Na = self.get_z(I,i,j,s)
-            LA = self.LA(s,Na,z)
-            if LA.any():
-                z2, Na = self.get_z(I, i, j, s2)
-                LA2 = self.LA(s2, Na, z2)
+            #Pick a site i,j, State is s
+            s = I[i,j]
+
+
+            s2 = self.get_s2(I,i,j)
+            if s2 == s:
+                return I
+            elif s==0:
+                z2, Na = self.get_z(I,i,j,s2)
+                LA2 = self.LA(s2,Na,z2)
                 if LA2.any():
-                    dH, I2 = self.get_dH(I, i, j, s, s2, z, z2, LA, LA2)
+                    dH, I2 = self.get_dH(I,i,j,s,s2,None,z2,None,LA2)
+                    # print(LA)
+                    return self.perform_transform(dH,I,I2,s,s2,None,None,i,j)
+                else:
+                    return I
+            elif s2==0:
+                z, Na = self.get_z(I,i,j,s)
+                LA = self.LA(s,Na,z)
+                if LA.any():
+                    dH, I2 = self.get_dH(I, i, j, s, s2,z,None,LA,None)
                     return self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
                 else:
                     return I
             else:
-                return I
+                z, Na = self.get_z(I,i,j,s)
+                LA = self.LA(s,Na,z)
+                if LA.any():
+                    z2, Na = self.get_z(I, i, j, s2)
+                    LA2 = self.LA(s2, Na, z2)
+                    if LA2.any():
+                        dH, I2 = self.get_dH(I, i, j, s, s2, z, z2, LA, LA2)
+                        return self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
+                    else:
+                        return I
+                else:
+                    return I
 
 
     def do_step_pol(self,I):
@@ -554,22 +559,22 @@ class CPM:
 
     def get_xy_clls(self,I):
         """Only VN neighbours r.e. the D_a """
-        self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
-        x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
-        self.n_clls = x_clls.size
-        self.xy_clls = set([])
-        for i in range(self.n_clls):
-            self.xy_clls.add((x_clls[i], y_clls[i]))
-        self.xy_clls_tup = tuple(self.xy_clls)
-
-        # ##UPDATE: ignore boundary cells
         # self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
-        # x_clls, y_clls = np.where((self.get_perimeter_elements(I) != 0)*(self.boundary_mask))
+        # x_clls, y_clls = np.where(self.get_perimeter_elements(I) != 0)
         # self.n_clls = x_clls.size
         # self.xy_clls = set([])
         # for i in range(self.n_clls):
         #     self.xy_clls.add((x_clls[i], y_clls[i]))
         # self.xy_clls_tup = tuple(self.xy_clls)
+
+        # ##UPDATE: ignore boundary cells
+        self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
+        x_clls, y_clls = np.where((self.get_perimeter_elements(I) != 0)*(self.boundary_mask))
+        self.n_clls = x_clls.size
+        self.xy_clls = set([])
+        for i in range(self.n_clls):
+            self.xy_clls.add((x_clls[i], y_clls[i]))
+        self.xy_clls_tup = tuple(self.xy_clls)
 
 
 
@@ -706,8 +711,8 @@ class CPM:
                 for k in range(len(self.xy_clls_tup)):
                     try:
                         I = do_step(I)
-                    except AttributeError or IndexError or TypeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
-                        break
+                    except AttributeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
+                        I = I
                 if i_save[ni]:
                     print(np.round(ni/n_steps * 100),"%")
                     I_save[ns] = I
