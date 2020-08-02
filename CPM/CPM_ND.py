@@ -30,27 +30,24 @@ def get_normal_params(p0, r, beta, gamma,A0):
 def do_job(inputt):
     p0,r,beta,T,Id = inputt
     cpm = CPM()
-    cpm.make_grid(30, 30)
+    cpm.make_grid(100, 100)
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
     cpm.lambd_A = lambda_A
     cpm.lambd_P = lambda_P
     cpm.P0 = P0
     cpm.A0 = A0
-    cpm.generate_cells(N_cell_dict={"E": 6, "T": 6})
+    cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
     cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
     cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = T
     cpm.I0 = cpm.I
-    cpm.run_simulation(int(1e3), int(1e2), polarise=False)
-    cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+    cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     cpm.animate()
     # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
-# input = np.array([4.00000000e+00, 1.38949549e+01, 1.00000000e+00, 1.00000000e+02,
-#        6.65400000e+03])
-input = [8,0.5,0.5,50,1]
+input = [3.00000000e+00, 3.72759372e+00, 2.85714286e-01, 1.00000000e+02,1.21100000e+03]
 do_job(input)
 
 """Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """
