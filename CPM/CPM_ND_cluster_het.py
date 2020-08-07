@@ -22,23 +22,32 @@ def get_normal_params(p0, r, beta, gamma,A0):
 
 
 def do_job(inputt):
-    p0,r,beta,T,Id = inputt
+    sbb,sgg,Id = inputt
     cpm = CPM()
     cpm.make_grid(100, 100)
-    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
+    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.5, gamma=0, A0=30)
     cpm.lambd_A = lambda_A
     cpm.lambd_P = lambda_P
     cpm.P0 = P0
     cpm.A0 = A0
     cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
     cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
-    cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
+
+    J00 = -W[1, 1]
+    beta = 0.5
+    gamma = 0
+    see = 0  # 0.4,0.0,0.4
+    sbg, sbe, sge = 0, 0, 0
+    eps = 0
+    cpm.make_J_ND(J00, beta, gamma, eps, sbb, sbg, sgg, sbe, sge, see)
+
+    # cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
-    cpm.T = T
+    cpm.T = 16
     cpm.I0 = cpm.I
     cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
+    save_npz("results_beta_gamma/I_save_%d.npz"%int(Id), I_SAVE)
 
 if __name__ == "__main__":
     # if not os.path.exists("/central/scratch/jakecs/Cellular_Potts_Model/results"):
@@ -47,22 +56,10 @@ if __name__ == "__main__":
     n_param_step = int(sys.argv[2])
     N_job = int(sys.argv[3])
     i_job = int(sys.argv[4])
-    p0_space, r0_space, beta_space, T_space = np.linspace(3,10,n_param_step),np.logspace(0,2,n_param_step),np.linspace(0,1,n_param_step),np.logspace(0,2,n_param_step)
+    sbb_space, sgg_space = np.linspace(0,1,n_param_step),np.linspace(0,1,n_param_step)
     rep_space = np.arange(n_iter)
-    PP,RR,BB,TT,NN = np.meshgrid(p0_space, r0_space, beta_space, T_space,rep_space,indexing="ij")
-    inputs = np.array([PP.ravel(),RR.ravel(),BB.ravel(),TT.ravel(),np.arange(NN.size)]).T
-
-    numbers = []
-    with open('CPM/filenames.txt', encoding="utf-8") as f:
-        for line in f:
-            __, __, filE = line.split("_")  # line.split("\t") if numbers are seperated by tab
-            number, __ = filE.split(".")
-            numbers.append(int(number))
-
-    remaining = set(np.arange(inputs.shape[0])).difference(set(numbers))
-
-    inputs = inputs[list(remaining)][i_job::N_job]
-
+    BB,GG,NN = np.meshgrid( sbb_space, sgg_space,rep_space,indexing="ij")
+    inputs = np.array([BB.ravel()[i_job::N_job],GG.ravel()[i_job::N_job],np.arange(NN.size)[i_job::N_job]]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
     client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []

@@ -7,7 +7,10 @@ import random
 # from skimage.transform import rescale
 from numba import jit
 # from line_profiler import LineProfiler
-from sim_analysis import Graph
+try:
+    from sim_analysis import Graph
+except ModuleNotFoundError:
+    from CPM.sim_analysis import Graph
 
 class Cell:
     def __init__(self,id,type):
@@ -202,7 +205,7 @@ class CPM:
         self.dtA = dtA
 
     def get_interaction_energy(self,ci,cj):
-        return np.sign(self.W[ci, cj])*np.random.lognormal(np.log(np.sign(self.W[ci, cj])*self.W[ci, cj]),self.sigma[ci,cj])
+        return np.random.normal(self.W[ci, cj],(-self.W[1,1]+self.W[1,2])*self.sigma[ci,cj])
 
     def symmetrize(self,X):
         upper_tri = np.triu(X)
@@ -218,7 +221,10 @@ class CPM:
         J = np.zeros([self.n_cells+1,self.n_cells+1])
         for i in range(self.n_cells+1):
             for j in range(self.n_cells+1):
-                if i!=j:
+                if i==0 or j==0:
+                    ci,cj = self.cell_type_list.index(self.cells[i].type),self.cell_type_list.index(self.cells[j].type)
+                    J[i,j] = -W[ci,cj]
+                elif i!=j:
                     ci,cj = self.cell_type_list.index(self.cells[i].type),self.cell_type_list.index(self.cells[j].type)
                     J[i,j] = self.get_interaction_energy(ci,cj)
                 else:
@@ -226,6 +232,36 @@ class CPM:
         J = self.symmetrize(J)
         self.J = J
 
+
+    def make_J_ND(self,J00,beta,gamma,eps, sbb,sbg,sgg,sbe,sge,see):
+        W = J00 * np.array([[0, 0, 0],
+                            [0, 1 + eps, (1 - beta) + eps],
+                            [0, (1 - beta) + eps, (1 + gamma) + eps]])
+        self.W = W
+        cov = np.array([[sbb,sbg,sbe],[sbg,sgg,sge],[sbe,sge,see]])
+        Beta,Gamma,Eps = np.random.multivariate_normal(mean=np.array([beta,gamma,eps]),
+                                                   cov=cov,size=int((self.n_cells+1)**2)).T
+
+        WW = J00 * np.array([[np.zeros_like(Beta), np.zeros_like(Beta), np.zeros_like(Beta)],
+                            [np.zeros_like(Beta), np.ones_like(Beta) + Eps, (1 - Beta) + Eps],
+                            [np.zeros_like(Beta), (1 - Beta) + Eps, (1 + Gamma) + Eps]])
+
+        k = 0
+        J = np.zeros([self.n_cells+1,self.n_cells+1])
+        for i in range(self.n_cells+1):
+            for j in range(self.n_cells+1):
+                if i==0 or j==0:
+                    ci,cj = self.cell_type_list.index(self.cells[i].type),self.cell_type_list.index(self.cells[j].type)
+                    J[i,j] = -W[ci,cj]
+                elif i==j:
+                    J[i,j] = 0
+                else:
+                    ci,cj = self.cell_type_list.index(self.cells[i].type),self.cell_type_list.index(self.cells[j].type)
+                    J[i,j] = -WW[ci,cj,k]
+                    k+=1
+
+        J = self.symmetrize(J)
+        self.J = J
 
 
     def make_init(self,type="circle",r = 3,spacing = 0.25):
@@ -926,7 +962,7 @@ class CPM:
         Im = np.zeros([I.shape[0], I.shape[1]]).astype(int)
         for j in range(1, self.n_cells + 1):
             cll_mask = I == j
-            cll_type_id = self.cell_type_list.index(self.cells[j].type)
+            cll_type_id = self.cell_type_list.index(self.cells[j-1].type)
             Im[cll_mask] = cll_type_id
         return Im
 
@@ -955,8 +991,43 @@ class CPM:
         nrows, ncols = I.shape
         X, Y = np.mgrid[:nrows, :ncols]
         R_tot = np.array([np.sum((X)*(Im!=0))/np.sum(Im!=0),np.sum((Y)*(Im!=0))/np.sum(Im!=0)])
-        p = np.sqrt(np.sum(((X*(Im!=0) - R_tot[0])**2 + (Y*(Im!=0) - R_tot[1])**2)))/np.sum(Im!=0)
+        p = np.sqrt(np.sum(((X*(Im!=0) - R_tot[0])**2 + (Y*(Im!=0) - R_tot[1])**2))/np.sum(Im!=0))
         R_i = np.array([np.array([np.sum((X)*(Im==i))/np.sum(Im==i),np.sum((Y)*(Im==i))/np.sum(Im==i)]) for i in range(1, len(self.cell_type_list))])
+        n_cell_type = len(self.cell_type_list)-1
+        f = np.zeros(n_cell_type)
+        for i in range(n_cell_type):
+            R_ii = np.roll(R_i,-1,axis=0)
+            ri = R_ii[0]
+            rj = R_ii[1:]
+            if rj.ndim > 1:
+                rj = np.mean(rj,axis=0)
+            f[i] = np.linalg.norm(ri-rj)/p
+        return f
+
+    def get_centroids(self,I):
+
+        nrows, ncols = I.shape
+        y_indices, x_indicies = np.mgrid[:nrows, :ncols]
+        centroids = np.zeros([self.n_cells+1,2])
+        def raw_moment(data, i_order, j_order):
+            return (data * x_indicies ** i_order * y_indices ** j_order).sum()
+        def get_centroid(data):
+            data_sum = data.sum()
+            m10 = raw_moment(data, 1, 0)
+            m01 = raw_moment(data, 0, 1)
+            y_centroid = m10 / data_sum
+            x_centroid = m01 / data_sum
+            return np.array([x_centroid, y_centroid])
+        for s in np.unique(I).astype(int):
+            centroid = get_centroid(I == s)
+            centroids[s] = centroid
+        return centroids
+
+    def get_pol_stat2(self,centroids,cell_type_mask):
+        """cell_centroids"""
+        R_tot = centroids[1:].mean(axis=0)
+        R_i = np.array([centroids[cell_type_msk].mean(axis=0) for cell_type_msk in cell_type_mask])
+        p = (np.linalg.norm(centroids[1:] - R_tot,axis=1)**2).mean()**0.5
         n_cell_type = len(self.cell_type_list)-1
         f = np.zeros(n_cell_type)
         for i in range(n_cell_type):
