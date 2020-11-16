@@ -1,0 +1,7 @@
+We anticiapte XEN externalise by a search and trapping mechanism.
+
+Searching = lower stiffness == faster externalisation.
+--> Fig. for radial polarity as a fn of XEN stiffness/mobility
+
+Trapping
+--> Polarisation. XEN have a polarity vector. Can be a function of occupancy of edge pixels

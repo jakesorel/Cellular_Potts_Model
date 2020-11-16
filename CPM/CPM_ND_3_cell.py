@@ -13,93 +13,50 @@ from numba import jit
 
 
 
-def get_normal_params(p0, r, beta, gamma,A0):
+def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
     """K = 1"""
     P0 = p0*np.sqrt(A0)
     lambda_P = A0/r
     J00 = -P0*lambda_P
     lambda_A = 1
-    W = J00*np.array([[0, 0, 0],
-                [0, 1, (1-beta)],
-                [0, (1-beta), (1+gamma)]])
+    W = J00*np.array([[0, 0, 0,0],
+                [0, 1, (1-beta),(1-delta)],
+                [0, (1-beta), (1+gamma),(1-delta)],
+                [0, (1-delta),(1-delta),(1-epsilon)]])
     return lambda_A,lambda_P,W,P0,A0
 
 
 
 
-def do_job(inputt):
-    p0,r,beta,gamma,T,Id = inputt
-    cpm = CPM()
-    cpm.make_grid(100, 100)
-    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=gamma, A0=30)
-    cpm.lambd_A = lambda_A
-    cpm.lambd_P = lambda_P
-    cpm.P0 = P0
-    cpm.A0 = A0
-    cpm.generate_cells(N_cell_dict={"E": 35, "T": 0})
-    cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
-    cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
-    cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
-    cpm.T = T
-    cpm.I0 = cpm.I
-    plt.imshow(cpm.boundary_mask)
-    plt.show()
-    cpm.run_simulation(int(5e2), int(1e2), polarise=False)
-    cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
-    cpm.animate()
+cpm = CPM()
+cpm.make_grid(100, 100)
+lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
+cpm.lambd_A = lambda_A
+cpm.lambd_P = lambda_P
+cpm.P0 = P0
+cpm.A0 = A0
+cpm.generate_cells(N_cell_dict={"E": 10, "T": 10,"X":14})
+cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P,lambda_P]))
+cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
+cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
+cpm.T = 15
+cpm.I0 = cpm.I
+plt.imshow(cpm.boundary_mask)
+plt.show()
+cpm.run_simulation(int(2e3), int(1e2), polarise=False)
+cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+cpm.animate()
+
+I_save = cpm.I_save[1]
+
+cpm.I_save = np.concatenate([I_save2,I_save],axis=0)
+I_save2 = cpm.I_save.copy()
     # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
 
-inputt = [7.8, 100, 0.3, 0.5,10.0**1.25,0]
-do_job(inputt)
-
-def get_outside(I):
-    outsides = set([])
-    for neighbour_opt in cpm.neighbour_options:
-        I_shift = np.roll(np.roll(I,neighbour_opt[0],axis=0),neighbour_opt[1],axis=1)
-        mask = ((I_shift*I)==0)*(I!=0)
-        outside_ids = np.unique(I[mask])
-        for Id in outside_ids:
-            outsides.add(Id)
-
-    return list(outsides)
-
-def make_outside_image(cpm,col_dict={"E":"red","T":"blue","X":"green"},t=-1):
-    outsides = get_outside(cpm.I_save[t])
-    outsides = np.array(outsides).astype(int)
-    for Id in outsides:
-        cpm.cells[Id].type = "T"
-    cpm.generate_image_t(res=4,col_dict=col_dict)
-    fig, ax = plt.subplots()
-    ax.imshow(cpm.Im_save[t])
-    ax.axis("off")
-    fig.savefig("%.3f.pdf"%time.time(),dpi=300)
-
-
-import random
-
-def make_random_image(cpm,col_dict={"E":"red","T":"blue","X":"green"},t=-1):
-    ids = np.unique(cpm.I)
-    ids = ids[1:]
-    for Id in ids:
-        cpm.cells[Id].type = "E"
-    random.shuffle(ids)
-    ids = ids[:int(ids.size/2)]
-    for Id in ids:
-        cpm.cells[Id].type = "T"
-    cpm.generate_image_t(res=4,col_dict=col_dict)
-    fig, ax = plt.subplots()
-    ax.imshow(cpm.Im_save[t])
-    ax.axis("off")
-    fig.savefig("%.3f.pdf"%time.time(),dpi=300)
-
-
-
-
-
-
-
-
+input = [4.00000000e+00, 1.38949549e+01, 1.00000000e+00, 1.00000000e+02,
+       6.65400000e+03]
+do_job(input)
 
 """Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """
 

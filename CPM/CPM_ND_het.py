@@ -25,67 +25,98 @@ def get_normal_params(p0, r, beta, gamma,A0):
     return lambda_A,lambda_P,W,P0,A0
 
 
+def do_job(inputt):
+    sbb,sgg,Id = inputt
+    cpm = CPM()
+    cpm.make_grid(100, 100)
+    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.5, gamma=0, A0=30)
+    cpm.lambd_A = lambda_A
+    cpm.lambd_P = lambda_P
+    cpm.P0 = P0
+    cpm.A0 = A0
+    cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
+    cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
 
+    J00 = -W[1, 1]
+    beta = 0.5
+    gamma = 0
+    see = 0  # 0.4,0.0,0.4
+    sbg, sbe, sge = 0, 0, 0
+    eps = 0
+    cpm.make_J_ND(J00, beta, gamma, eps, sbb, sbg, sgg, sbe, sge, see)
 
-p0,r,beta,T,Id = [8,100,0.5,12,0]
-cpm = CPM()
-cpm.make_grid(100, 100)
-lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
-cpm.lambd_A = lambda_A
-cpm.lambd_P = lambda_P
-cpm.P0 = P0
-cpm.A0 = A0
-cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
-cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
+    # cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
+    cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
+    cpm.T = 16
+    cpm.I0 = cpm.I
+    cpm.run_simulation(int(1e4), int(2e2), polarise=False)
+    cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+    cpm.animate()
 
-J00 = -W[1,1]
-gamma = 0
-sbb,sgg,see = 0.4,0.4,0.4#0.4,0.0,0.4
+do_job([0.6,0.2,1])
+
+#
+#
+# p0,r,beta,T,Id = [8,100,0.5,12,0]
+# cpm = CPM()
+# cpm.make_grid(100, 100)
+# lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=r, beta=beta, gamma=0, A0=30)
+# cpm.lambd_A = lambda_A
+# cpm.lambd_P = lambda_P
+# cpm.P0 = P0
+# cpm.A0 = A0
+# cpm.generate_cells(N_cell_dict={"E": 12, "T": 12})
+# cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P]))
+#
+# J00 = -W[1,1]
+# gamma = 0
+# sbb,sgg,see = 0.4,0.4,0.4#0.4,0.0,0.4
+# sbg,sbe,sge = 0,0,0
+# eps = 0
+# cpm.make_J_ND(J00,beta,gamma,eps, sbb,sbg,sgg,sbe,sge,see)
+#
+#
+# cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
+# cpm.T = T
+# cpm.I0 = cpm.I
+# cpm.run_simulation(int(1e3), int(1e2), polarise=False)
+# cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+# cpm.animate()
+#     # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
+#     # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
+#
+#
+# J00 = -W[1,1]
+# sAA,sAB,sBB = 0.3,0.3,0.3
+# a,b = np.random.multivariate_normal(mean=np.array([0,0]),cov=J00*np.array([[sAA,sAB],[sAB,sBB]]),size=1000).T
+#
+#
+#
+# self = cpm
+# self.n_cells = 100
+#
+# sbb,sgg,see = 0,0,0.4#0.4,0.0,0.4
+# sbg,sbe,sge = 0,0,0
+#
+# W = J00 * np.array([[0, 0, 0],
+#                     [0, 1 + eps, (1 - beta) + eps],
+#                     [0, (1 - beta) + eps, (1 + gamma) + eps]])
+# self.W = W
+# cov = np.array([[sbb, sbg, sbe], [sbg, sgg, sge], [sbe, sge, see]])
+# Beta, Gamma, Eps = np.random.multivariate_normal(mean=np.array([beta, gamma, eps]),
+#                                                  cov=cov, size=int((self.n_cells + 1) ** 2)).T
+#
+# plt.close("all")
+# fig, ax = plt.subplots()
+# ax.scatter(Beta - Eps,Gamma - Eps,s=3)
+# ax.set(aspect=1)
+# fig.show()
+#
+# """Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """
+#
+sbb,sgg,see = 0.005,0.005,1e-7#0.4,0.0,0.4
 sbg,sbe,sge = 0,0,0
-eps = 0
-cpm.make_J_ND(J00,beta,gamma,eps, sbb,sbg,sgg,sbe,sge,see)
-
-
-cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
-cpm.T = T
-cpm.I0 = cpm.I
-cpm.run_simulation(int(1e3), int(1e2), polarise=False)
-cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
-cpm.animate()
-    # I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    # save_npz("results/I_save_%d.npz"%int(Id), I_SAVE)
-
-
-J00 = -W[1,1]
-sAA,sAB,sBB = 0.3,0.3,0.3
-a,b = np.random.multivariate_normal(mean=np.array([0,0]),cov=J00*np.array([[sAA,sAB],[sAB,sBB]]),size=1000).T
-
-
-
-self = cpm
-self.n_cells = 100
-
-sbb,sgg,see = 0,0,0.4#0.4,0.0,0.4
-sbg,sbe,sge = 0,0,0
-
-W = J00 * np.array([[0, 0, 0],
-                    [0, 1 + eps, (1 - beta) + eps],
-                    [0, (1 - beta) + eps, (1 + gamma) + eps]])
-self.W = W
-cov = np.array([[sbb, sbg, sbe], [sbg, sgg, sge], [sbe, sge, see]])
-Beta, Gamma, Eps = np.random.multivariate_normal(mean=np.array([beta, gamma, eps]),
-                                                 cov=cov, size=int((self.n_cells + 1) ** 2)).T
-
-plt.close("all")
-fig, ax = plt.subplots()
-ax.scatter(Beta - Eps,Gamma - Eps,s=3)
-ax.set(aspect=1)
-fig.show()
-
-"""Problem: boundaries. Either prevent swapping into boundary, or deploy periodic bcs """
-
-sbb,sgg,see = 1,1,1e-7#0.4,0.0,0.4
-sbg,sbe,sge = 0,0,0
+beta,gamma,eps = 0.5,0,0
 
 red_cov = np.array([[sbb + see - 2*sbe, sbg - sbe - sge + see],
                     [sbg - sbe - sge + see,sgg + see - 2*sge]])
@@ -110,29 +141,23 @@ def multivariate_gaussian(pos, mu, Sigma):
 
     return np.exp(-fac / 2) / N
 
-x,y = np.mgrid[-3:4:0.05,-3:4:0.05]
+x,y = np.mgrid[-1:1:0.005,-1:1:0.005]
 pos = np.dstack((x.ravel(),y.ravel()))
 val = multivariate_gaussian(pos,red_mu,red_cov)
 # val = val.reshape(x.shape)
 Levels = np.linspace(val.min(),val.max(),200)
 
 
-cpm.n_cells = 50
-W = J00 * np.array([[0, 0, 0],
-                    [0, 1 + eps, (1 - beta) + eps],
-                    [0, (1 - beta) + eps, (1 + gamma) + eps]])
-self.W = W
-cov = np.array([[sbb, sbg, sbe], [sbg, sgg, sge], [sbe, sge, see]])
-Beta, Gamma, Eps = np.random.multivariate_normal(mean=np.array([beta, gamma, eps]),
-                                                 cov=cov, size=int((self.n_cells + 1) ** 2)).T
-
-
-
-
-fig, ax = plt.subplots()
-ax.tricontourf(x.ravel(),y.ravel(),val.flatten(), levels=Levels, cmap=plt.cm.plasma)
-ax.scatter(Beta - Eps,Gamma - Eps,s=3,color="white",alpha=0.3)
-fig.show()
+fig, ax = plt.subplots(figsize=(4,4))
+ax.tricontourf(y.ravel(),x.ravel(),val.flatten(), levels=Levels, cmap=plt.cm.plasma)
+# ax.scatter(Beta - Eps,Gamma - Eps,s=3,color="white",alpha=0.3)
+ax.set(aspect=1,ylabel=r"$\beta$",xlabel=r"$\gamma$")
+sm = plt.cm.ScalarMappable(cmap=plt.cm.plasma, norm=plt.Normalize(vmax=0.7, vmin=0))
+sm._A = []
+cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.085, aspect=10, orientation="vertical")
+cl.set_label(r"$Pr(\beta,\gamma)$")
+fig.subplots_adjust(top=0.8, bottom=0.2, left=0.2, right=0.8)
+fig.savefig("sbb005sgg0005.pdf")
 #
 #
 # cpm = CPM()
