@@ -6,3 +6,4 @@ do
     sbatch run_job_3cell.sh "$i"
 done
 
+
