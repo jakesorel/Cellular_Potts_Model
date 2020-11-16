@@ -48,7 +48,7 @@ if __name__ == "__main__":
     n_param_step = 25
     p0_space, T_space = np.linspace(4,11,n_param_step),np.logspace(0,2,n_param_step)
     PP,TT = np.meshgrid(p0_space, T_space,indexing="ij")
-    inputs = np.array([PP.ravel(),TT.ravel(),np.arange(PP.size)])
+    inputs = np.array([PP.ravel(),TT.ravel(),np.arange(PP.size)]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
     client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []
