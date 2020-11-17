@@ -36,7 +36,7 @@ def do_job(inputt):
     cpm.P0 = P0
     cpm.A0 = A0
     cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
-    cpm.set_lambdP(np.array([0.0, cpm.lambda_P, cpm.lambda_P, cpm.lambda_P]))
+    cpm.set_lambdP(np.array([0.0, cpm.lambd_P, cpm.lambd_P, cpm.lambd_P]))
     cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = T

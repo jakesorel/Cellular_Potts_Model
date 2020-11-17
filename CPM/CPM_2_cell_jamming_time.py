@@ -47,7 +47,7 @@ def do_job(inputt):
     # for cll in cpm.cells:
     #     if cll.type is "X":
     #         cll.P0 = P0*1
-    cpm.set_lambdP(np.array([0.0, cpm.lambda_P, cpm.lambda_P, cpm.lambda_P]))
+    cpm.set_lambdP(np.array([0.0, cpm.lambd_P, cpm.lambd_P, cpm.lambd_P]))
     cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = 15
