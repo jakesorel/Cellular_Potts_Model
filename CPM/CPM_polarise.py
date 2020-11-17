@@ -49,7 +49,7 @@ if __name__ == "__main__":
     n_param_step = int(sys.argv[2])
     n_rep = int(sys.argv[3])
     pol_amount = np.linspace(0.3,1,n_param_step)[int(sys.argv[1])]
-    inputs = np.array([np.repeat(pol_amount),np.arange(n_rep)]).T
+    inputs = np.array([np.repeat(pol_amount,n_rep),np.arange(n_rep)]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
     client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []
