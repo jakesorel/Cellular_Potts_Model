@@ -954,6 +954,60 @@ class CPM:
         self.I_save = I_save
         return self.I
 
+
+    def dynamic_var(self,t,t0,start,end,tau):
+        return start + (end-start)*(0.5+0.5*np.tanh((t-t0)/(tau)))
+
+    def update_p0(self,t):
+        lP_mult = self.dynamic_var(t,self.t0,self.lPstart,self.lPend,self.tau)
+
+        def get_normal_params(p0, r, beta, gamma, delta, epsilon, A0, eta):
+            """K = 1"""
+            P0 = p0 * np.sqrt(A0)
+            lambda_P = A0 / r * lP_mult
+            J00 = -P0 * A0 / r * eta
+            lambda_A = 1
+            W = J00 * np.array([[0, 0, 0, 0],
+                                [0, 1, (1 - beta), (1 - delta)],
+                                [0, (1 - beta), (1 + gamma), (1 - delta)],
+                                [0, (1 - delta), (1 - delta), (1 - epsilon)]])
+            return lambda_A, lambda_P, W, P0, A0
+
+        lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,eta = self.eta)
+
+        self.lambd_P = lambda_P * lP_mult
+        # self.P0 = P0
+        self.set_lambdP(np.array([0.0, lambda_P* lP_mult, lambda_P* lP_mult, lambda_P* lP_mult]))
+        # self.make_J(W)
+        # self.set_A0_P0()
+
+
+
+    def run_simulation_dynamicp0(self,n_steps,n_save,polarise=False):
+        I = self.I
+        i_save = np.zeros(n_steps).astype(bool)
+        i_save[::int(n_steps/n_save)] = True
+        n_save = i_save[::int(n_steps/n_save)].size
+        I_save = np.zeros([n_save,self.num_x,self.num_y])
+        ns = 0
+        self.get_xy_clls(I)
+        do_step = self.do_step
+        for ni in range(n_steps):
+            for k in range(len(self.xy_clls_tup)):
+                try:
+                    I = do_step(I)
+                except AttributeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
+                    I = I
+            if i_save[ni]:
+                self.update_p0(ni)
+                print(np.round(ni/n_steps * 100),"%")
+                I_save[ns] = I
+                self.I_save = I_save
+                ns += 1
+        self.I = I
+        self.I_save = I_save
+        return self.I
+
     #
     #
     #

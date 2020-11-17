@@ -8,14 +8,11 @@ import sys
 
 
 
-
-
-
-def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0,eta = 1):
+def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
     """K = 1"""
     P0 = p0*np.sqrt(A0)
     lambda_P = A0/r
-    J00 = -P0*lambda_P*eta
+    J00 = -P0*lambda_P
     lambda_A = 1
     W = J00*np.array([[0, 0, 0,0],
                 [0, 1, (1-beta),(1-delta)],
@@ -25,37 +22,37 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0,eta = 1):
 
 
 
-
 def do_job(inputt):
-    lPmult,T,Id = inputt
+    delta,epsilon,pol_amount,Id = inputt
     cpm = CPM()
     cpm.make_grid(100, 100)
-    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30)
+    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=delta, epsilon=epsilon, A0=30)
     cpm.lambd_A = lambda_A
-    cpm.lambd_P = lambda_P*lPmult
+    cpm.lambd_P = lambda_P
+    cpm.pol_amount = pol_amount
     cpm.P0 = P0
     cpm.A0 = A0
     cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
-    cpm.set_lambdP(np.array([0.0, cpm.lambda_P, cpm.lambda_P, cpm.lambda_P]))
+    cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P, lambda_P]))
     cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
-    cpm.T = T
+    cpm.T = 15
     cpm.I0 = cpm.I
     cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    save_npz("two_cell_results_lP_T/%d_%d.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
+    save_npz("pol_robust/%d_%d.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
 
 
 if __name__ == "__main__":
-    if not os.path.exists("two_cell_results_lP_T"):
-        os.makedirs("two_cell_results_lP_T")
+    if not os.path.exists("pol_robust"):
+        os.makedirs("pol_robust")
     n_param_step = int(sys.argv[2])
     n_rep = int(sys.argv[3])
-    lPmult_space, T_space = np.linspace(0.5,5,n_param_step),np.logspace(0,2,n_param_step)
-    LL,TT = np.meshgrid(lPmult_space, T_space,indexing="ij")
-    inputs = np.array([LL.ravel(),TT.ravel()]).T
+    delta_space,eps_space,pol_amount_space = np.linspace(0,1,n_param_step),np.linspace(0,1,n_param_step),np.array([0.4,1])
+    DD, EE,PP = np.meshgrid(delta_space,eps_space,pol_amount_space,indexing="ij")
+    inputs = np.array([DD.ravel(),EE.ravel(),PP.ravel()]).T
     input = inputs[int(sys.argv[1])]
-    inputs = np.array([np.repeat(input[0],n_rep),np.repeat(input[1],n_rep),np.arange(n_rep)]).T
+    inputs = np.array([np.repeat(input[0],n_rep),np.repeat(input[1],n_rep),np.repeat(input[2],n_rep),np.arange(n_rep)]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
     client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []

@@ -13,11 +13,11 @@ from numba import jit
 
 
 
-def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
+def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0,eta = 1):
     """K = 1"""
     P0 = p0*np.sqrt(A0)
     lambda_P = A0/r
-    J00 = -P0*lambda_P
+    J00 = -P0*lambda_P*eta
     lambda_A = 1
     W = J00*np.array([[0, 0, 0,0],
                 [0, 1, (1-beta),(1-delta)],
@@ -30,13 +30,19 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
 
 cpm = CPM()
 cpm.make_grid(100, 100)
-lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
+cpm.tau = 100
+nT = 1e3
+cpm.t0 = int(nT/2)
+cpm.lPstart = 5
+cpm.lPend = 1
+cpm.eta = 1
+lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30,eta = cpm.eta)
 cpm.lambd_A = lambda_A
 cpm.lambd_P = lambda_P
 cpm.P0 = P0
 cpm.A0 = A0
-cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":16})
-cpm.pol_amount = 0.4
+cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":0})
+cpm.pol_amount = 1
 # for cll in cpm.cells:
 #     if cll.type is "X":
 #         cll.P0 = P0*1
@@ -47,7 +53,7 @@ cpm.T = 15
 cpm.I0 = cpm.I
 # plt.imshow(cpm.boundary_mask)
 # plt.show()
-cpm.run_simulation_XEN_polarise(int(1e3), int(50),pol_skip=2)
+cpm.run_simulation_dynamicp0(int(nT), int(50))
 cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
 cpm.animate()
 
