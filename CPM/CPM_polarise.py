@@ -32,13 +32,13 @@ def do_job(inputt):
     cpm.pol_amount = pol_amount
     cpm.P0 = P0
     cpm.A0 = A0
-    cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
+    cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 14})
     cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P, lambda_P]))
     cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = 15
     cpm.I0 = cpm.I
-    cpm.run_simulation(int(1e4), int(2e2), polarise=False)
+    cpm.run_simulation_XEN_polarise(int(1e4), int(2e2), pol_skip=2)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     save_npz("polarisation_results/%d_%d.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
 
