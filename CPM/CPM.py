@@ -26,9 +26,15 @@ class Cell:
 
         self.centroid_t_ = []
 
+
         self.lambd_P = []
 
         self.cell_pol = False
+
+        self.direc = []
+        self.prop = []
+        self.bound_centroid = []
+
 
 
 
@@ -150,6 +156,8 @@ class CPM:
         self.Im_save = []
 
 
+        self.XEN_ids = []
+
     def r0(self,x):
         return x
 
@@ -165,6 +173,7 @@ class CPM:
     def make_grid(self,num_x=300,num_y=300):
         self.num_x,self.num_y = num_x,num_y
         self.I = np.zeros([num_x,num_y]).astype(int)
+        self.y_indices, self.x_indicies = np.mgrid[:num_x, :num_y]
         self.boundary_mask = np.ones_like(self.I).astype(bool)
         self.boundary_mask[0],self.boundary_mask[:,0],self.boundary_mask[-1],self.boundary_mask[:,-1] = False,False,False,False
 
@@ -464,6 +473,65 @@ class CPM:
         return dH,I2
 
 
+
+    def get_dH_XENpol(self,I,i,j,s,s2,z,z2,LA,LA2):
+        """if s == 0: then extension; if s2 == 0 then retraction"""
+        I2 = I.copy()
+        I2[i, j] = s2
+        if s == 0:
+            dH1 = 0
+        else:
+            dP, dA = int(self.dP_masks[z][LA]), -1  # Triple check the signs are correct here.
+            cell1 = self.cells[s]
+            cell1.An, cell1.Pn = cell1.A+dA,cell1.P+dP
+            dH1 = self.H(cell1.An,cell1.Pn,cell1.A0,cell1.P0,cell1) - self.H(cell1.A,cell1.P,cell1.A0,cell1.P0,cell1)
+        if s2 == 0:
+            dH2 = 0
+        else:
+            dP2,dA2 = int(self.dP_masks[z2][LA2]),+1
+            cell2 = self.cells[s2]
+            cell2.An, cell2.Pn = cell2.A+dA2,cell2.P+dP2
+            dH2 = self.H(cell2.An,cell2.Pn,cell2.A0,cell2.P0,cell2) - self.H(cell2.A,cell2.P,cell2.A0,cell2.P0,cell2)
+        if s in self.XEN_ids:
+            # direc0 = self.cells[s].direc
+            # bound_centroid = self.cells[s].bound_centroid
+            # direc = np.array([j-bound_centroid[0],i-bound_centroid[1]])
+            # direc /= np.linalg.norm(direc)
+            prop = self.cells[s].prop
+            # dtheta = np.arccos(np.dot(direc,direc0))
+            # if prop> 0.5:
+            #     prop = 0.5
+            # polmag = self.pol_amount + ((1-prop) - prop*np.cos(dtheta))*(1-self.pol_amount)
+            # polam = self.pol_amount*(0.5 - prop)**2
+            polmag = self.pol_amount +(1-self.pol_amount)*prop#polam+(np.pi - dtheta > prop * np.pi)*(1.0-polam)
+        else:
+            polmag = 1
+        if s2 in self.XEN_ids:
+            # direc0 = self.cells[s2].direc
+            # bound_centroid = self.cells[s2].bound_centroid
+            # direc = np.array([j-bound_centroid[0],i-bound_centroid[1]])
+            # direc /= np.linalg.norm(direc)
+            prop = self.cells[s2].prop
+            # try:
+            # dtheta = np.arccos(np.dot(direc,direc0))
+            # except RuntimeWarning:
+            #     print(direc,direc0,np.dot(direc,direc0))
+            # if prop> 0.5:
+            #     prop = 0.5
+            # polmag2 = self.pol_amount + ((1-prop) - prop*np.cos(dtheta))*(1-self.pol_amount)
+            # polmag2 = self.pol_amount+(np.pi - dtheta > prop * np.pi)*(1.0-self.pol_amount)
+            # polam = self.pol_amount*(0.5 - prop)**2
+            polmag2 = self.pol_amount +(1-self.pol_amount)*prop#polam+(np.pi - dtheta > prop * np.pi)*(1.0-polam)
+        else:
+            polmag2 = 1
+
+
+        dJ = _get_dJ_XENpol(self.J,I, I2, i, j, s, s2,polmag,polmag2)
+
+        dH = dH1 + dH2 + dJ
+        return dH,I2
+
+
     def get_dH_pol(self,I,i,j,s,s2,z,z2,LA,LA2,ii,jj):
         """if s == 0: then extension; if s2 == 0 then retraction"""
         I2 = I.copy()
@@ -593,6 +661,51 @@ class CPM:
 
 
 
+
+    def do_step_XENpol(self,I):
+        i, j = random.choice(self.xy_clls_tup)
+        if (i*j==0) or ((i-self.num_x+1)*(j-self.num_y+1)==0):
+            return I
+        else:
+            #Pick a site i,j, State is s
+            s = I[i,j]
+
+
+            s2 = self.get_s2(I,i,j)
+            if s2 == s:
+                return I
+            elif s==0:
+                z2, Na = self.get_z(I,i,j,s2)
+                LA2 = self.LA(s2,Na,z2)
+                if LA2.any():
+                    dH, I2 = self.get_dH_XENpol(I,i,j,s,s2,None,z2,None,LA2)
+                    # print(LA)
+                    return self.perform_transform(dH,I,I2,s,s2,None,None,i,j)
+                else:
+                    return I
+            elif s2==0:
+                z, Na = self.get_z(I,i,j,s)
+                LA = self.LA(s,Na,z)
+                if LA.any():
+                    dH, I2 = self.get_dH_XENpol(I, i, j, s, s2,z,None,LA,None)
+                    return self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
+                else:
+                    return I
+            else:
+                z, Na = self.get_z(I,i,j,s)
+                LA = self.LA(s,Na,z)
+                if LA.any():
+                    z2, Na = self.get_z(I, i, j, s2)
+                    LA2 = self.LA(s2, Na, z2)
+                    if LA2.any():
+                        dH, I2 = self.get_dH_XENpol(I, i, j, s, s2, z, z2, LA, LA2)
+                        return self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
+                    else:
+                        return I
+                else:
+                    return I
+
+
     def get_xy_clls(self,I):
         """Only VN neighbours r.e. the D_a """
         # self.PE = np.sum(np.array([I!=np.roll(np.roll(I,i,axis=0),j,axis=1) for i,j in self.neighbour_options]),axis=0)
@@ -657,10 +770,43 @@ class CPM:
             self.cells[s].perp_pol = div_plane
             self.cells[s].cell_pol = True
 
+    def XEN_polarise(self):
+        if len(self.XEN_ids)==0:
+            for cll in self.cells:
+                if cll.type == "X":
+                    self.XEN_ids.append(cll.id)
+        bound_els = self.get_perimeter_elements_Moore(self.I != 0) * (self.I != 0)
+
+        for s in self.XEN_ids:
+            cell_edge = self.get_perimeter_elements_Moore(self.I == s) * (self.I == s)
+            cell_bound = bound_els*cell_edge
+            prop = cell_bound.sum() / cell_edge.sum()
+            # if prop > 0.5:
+            #     self.cells[s].prop = 0.5
+            # else:
+            self.cells[s].prop = prop
+            #
+            # if prop == 1:
+            #     __,centroid = self.moments_cov(cell_edge)
+            #     self.cells[s].bound_centroid = centroid
+            #     theta = np.random.uniform(0,2*np.pi)
+            #     self.cells[s].direc = np.array([np.cos(theta),np.sin(theta)])
+            # elif prop != 0:
+            #
+            #     __,centroid = self.moments_cov(cell_edge)
+            #     self.cells[s].bound_centroid = centroid
+            #     __,edge_centroid = self.moments_cov(cell_bound)
+            #     direc = edge_centroid - centroid
+            #     direc /= np.linalg.norm(direc)
+            #     self.cells[s].direc = direc
+            # if prop == 0:
+            #     theta = np.random.uniform(0, 2 * np.pi)
+            #     self.cells[s].direc = np.array([np.cos(theta), np.sin(theta)]) #arbitrary choice, but important to avoid NaNs
+
+
+
     def raw_moment(self,data, i_order, j_order):
-      nrows, ncols = data.shape
-      y_indices, x_indicies = np.mgrid[:nrows, :ncols]
-      return (data * x_indicies**i_order * y_indices**j_order).sum()
+        return (data * self.x_indicies**i_order * self.y_indices**j_order).sum()
 
     def moments_cov(self,data):
         """https://stackoverflow.com/questions/9005659/compute-eigenvectors-of-image-in-python"""
@@ -776,6 +922,34 @@ class CPM:
                     I_save[ns] = I
                     self.I_save = I_save
                     ns += 1
+        self.I = I
+        self.I_save = I_save
+        return self.I
+
+
+    def run_simulation_XEN_polarise(self,n_steps,n_save,pol_skip=5):
+        I = self.I
+        i_save = np.zeros(n_steps).astype(bool)
+        i_save[::int(n_steps/n_save)] = True
+        n_save = i_save[::int(n_steps/n_save)].size
+        I_save = np.zeros([n_save,self.num_x,self.num_y])
+        ns = 0
+        self.get_xy_clls(I)
+        do_step = self.do_step_XENpol
+        for ni in range(n_steps):
+            for k in range(len(self.xy_clls_tup)):
+                try:
+                    I = do_step(I)
+                except AttributeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
+                    I = I
+            if i_save[ni]:
+                print(np.round(ni/n_steps * 100),"%")
+                I_save[ns] = I
+                self.I_save = I_save
+                ns += 1
+            if np.mod(ni,pol_skip)==0:
+                self.I = I
+                self.XEN_polarise()
         self.I = I
         self.I_save = I_save
         return self.I
@@ -1245,6 +1419,15 @@ def _get_dJ(J,I, I2, i, j, s, s2):
     dJ = 0
     for k in range(8):
         dJ += J[s2,Na2[k]] - J[s,Na[k]]
+    return dJ
+
+@jit(cache=True, nopython=True)
+def _get_dJ_XENpol(J,I, I2, i, j, s, s2,polmag,polmag2):
+    Na = I[i - 1:i + 2, j - 1:j + 2].take([0,1,2,3,5,6,7,8])
+    Na2 = I2[i - 1:i + 2, j - 1:j + 2].take([0,1,2,3,5,6,7,8])
+    dJ = 0
+    for k in range(8):
+        dJ += polmag2*J[s2,Na2[k]] - polmag*J[s,Na[k]]
     return dJ
 
 
