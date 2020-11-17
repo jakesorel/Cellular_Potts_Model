@@ -45,8 +45,8 @@ cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
 cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
 cpm.T = 15
 cpm.I0 = cpm.I
-plt.imshow(cpm.boundary_mask)
-plt.show()
+# plt.imshow(cpm.boundary_mask)
+# plt.show()
 cpm.run_simulation_XEN_polarise(int(1e3), int(50),pol_skip=2)
 cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
 cpm.animate()
