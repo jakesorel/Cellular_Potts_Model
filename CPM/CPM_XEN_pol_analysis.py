@@ -32,6 +32,8 @@ for cll in cpm.cells:
 def radial_polarity_centroids(centroids,XEN_ids):
     XEN_cells = np.zeros(centroids.shape[0]).astype(np.bool)
     XEN_cells[XEN_ids] = 1
+    nXEN_cells = ~XEN_cells
+    nXEN_cells[0] = False
     centre = centroids.mean(axis=0)
     displT = centroids - centre
     displacementT = np.mean(np.linalg.norm(displT, axis=1))
@@ -40,7 +42,7 @@ def radial_polarity_centroids(centroids,XEN_ids):
     displacementX = np.mean(np.linalg.norm(displX, axis=1))
     # polarityX = np.mean(displX, axis=0)
 
-    displnX = centroids[~XEN_cells] - centre
+    displnX = centroids[nXEN_cells] - centre
     displacementnX = np.mean(np.linalg.norm(displnX, axis=1))
     # polaritynX = np.mean(displnX, axis=0)
 
@@ -50,9 +52,9 @@ def radial_polarity_centroids(centroids,XEN_ids):
 
 def get_radial_polarity_t(i,j):
     nT = 40
-    t_span = np.linspace(0,80,nT).astype(np.int64)
+    t_span = np.linspace(0,40,nT).astype(np.int64)
     try:
-        I_save = load_npz("CPM/polarisation_results_old/%d_%d.npz"%(i,j)).toarray()
+        I_save = load_npz("CPM/polarisation_results/%d_%d.npz"%(i,j)).toarray()
         I_save = I_save.reshape((n_save, cpm.num_x, cpm.num_y))
         cpm.I_save = I_save
         disp = np.array([radial_polarity_centroids(cpm.get_centroids(I_save[t]),XEN_ids) for t in t_span])
@@ -65,7 +67,7 @@ def get_radial_polarity_t(i,j):
 
 n_slurm_tasks = 8
 client = Client(threads_per_worker=1, n_workers=n_slurm_tasks, memory_limit="1GB")
-Is,Js = np.arange(10),np.arange(10)
+Is,Js = np.arange(15),np.arange(15)
 II,JJ = np.meshgrid(Is,Js,indexing="ij")
 inputs = np.array([II.ravel(),JJ.ravel()]).T
 inputs = inputs.astype(np.int64)
@@ -81,6 +83,9 @@ RPtmean = np.nanmean(nRPt,axis=(1))
 # RPtmean = np.nanmean(RPt[:,:,2],axis=(1))
 
 
+plt.plot(nRPt[:,0])
+plt.show()
+
 # fig, ax = plt.subplots()
 # ax.imshow(np.flip(RPtmean[:12,:30],axis=0),aspect=3,vmin = 0.15,vmax = 0.4,cmap = plt.cm.Greens)
 
@@ -90,21 +95,91 @@ FINALISED FIGURE START
 """
 
 fig, ax = plt.subplots(figsize=(3.1,3))
-vmax = 0.4
-ax.imshow(np.flip(RPtmean[:12,:30],axis=0),aspect=3600,vmin = 0.15,vmax = vmax,cmap = plt.cm.Greens,extent=[0,1e4 * 8/20 * (61.538/80),0.1,1.4291667])
-ax.set(xlabel="Time (MCS)",ylabel="Relative circumferential \n elastic modulus "r"$(\lambda_P^{XEN} / \lambda_P^{ES})$")
+vmax = np.percentile(RPtmean,85)
+vmin = np.percentile(RPtmean,25)
+ax.imshow(np.flip(RPtmean,axis=0),aspect=3600,vmin = vmin,vmax = vmax,cmap = plt.cm.Greens,extent=[0,1e4 *40/200,0.3,1])
+ax.set(xlabel="Time (MCS)",ylabel="Polarisation magnitude "r"$(\zeta)$")
 sm = plt.cm.ScalarMappable(cmap=plt.cm.Greens,norm=plt.Normalize(vmax=vmax,vmin=0.15))
 sm._A = []
-cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.125, aspect=10, orientation="vertical")#,ticks=np.linspace(0,1,2*N+1)[1::2])
+cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.105, aspect=10, orientation="vertical")#,ticks=np.linspace(0,1,2*N+1)[1::2])
 cl.set_label("Normalized XEN \n radial asymmetry")
 fig.subplots_adjust(top=0.9, bottom=0.25, left=0.2, right=0.75,wspace=0.05)
+# fig.show()
 
-fig.savefig("XEN radial asymmetry vs time.pdf",dpi=300)
+fig.savefig("XEN radial asymmetry vs polarity.pdf",dpi=300)
+#
 
 
-"""
-END
-"""
+#
+#
+# def get_radial_polarity_t(i,j):
+#     nT = 40
+#     t_span = np.linspace(0,199,nT).astype(np.int64)
+#     try:
+#         I_save = load_npz("CPM/polarisation_results/%d_%d.npz"%(i,j)).toarray()
+#         I_save = I_save.reshape((n_save, cpm.num_x, cpm.num_y))
+#         cpm.I_save = I_save
+#         disp = np.array([radial_polarity_centroids(cpm.get_centroids(I_save[t]),XEN_ids) for t in t_span])
+#     except FileNotFoundError:
+#         disp = np.ones(nT)*np.nan
+#
+#     return disp
+#
+#
+#
+# n_slurm_tasks = 8
+# client = Client(threads_per_worker=1, n_workers=n_slurm_tasks, memory_limit="1GB")
+# Is,Js = np.arange(15),np.arange(15)
+# II,JJ = np.meshgrid(Is,Js,indexing="ij")
+# inputs = np.array([II.ravel(),JJ.ravel()]).T
+# inputs = inputs.astype(np.int64)
+# lazy_results = []
+# for inputt in inputs:
+#     lazy_result = dask.delayed(get_radial_polarity_t)(*inputt)
+#     lazy_results.append(lazy_result)
+# out = dask.compute(*lazy_results)
+#
+# RPt = np.array(out).reshape(II.shape[0],II.shape[1],40)
+# nRPt = (RPt.T-RPt[:,:,0].T).T
+# RPtmean = np.nanmean(nRPt,axis=(1))
+#
+#
+# fig, ax = plt.subplots()
+# cols = plt.cm.plasma(np.arange(15)/15)
+# for i in range(15):
+#     ax.plot(np.linspace(0,1e4,40),RPtmean[i],color=cols[i])
+# # ax.set(xscale="log")
+# fig.show()
+# from scipy.optimize import curve_fit
+#
+# def sort_curve(x,a,c):
+#     return a*(1 - np.exp(-x/c))
+#
+# t_span = np.linspace(0,1e4*40/200,40)
+# taus = np.zeros(II.shape)
+# for i in range(15):
+#     for j in range(15):
+#         # np.nonzero(nRPt[i,j]>0.4)[0].min()
+#         taus[i,j] = curve_fit(sort_curve, t_span, nRPt[i, j], [0.6, 1000],bounds=((0,0),(1,t_span.max()*2)))[0][1]
+#
+#
+# fig, ax = plt.subplots()
+# for i in range(15):
+#     ax.scatter(np.arange(15),taus[:,i])
+# ax.set(ylim=(0,1000))
+# fig.show()
+#
+# RPt_smooth = np.zeros_like(RPt)
+# for i in range(25):
+#     for j in range(10):
+#         for k in range(3):
+#             RPt_smooth[i,j,k] = sort_curve(t_span, *curve_fit(sort_curve, t_span, RPt[i, j,k], [0.6, 0.6, 1000])[0])
+#
+#
+#
+# """
+# END
+# """
 #
 # lambda_P_span = np.linspace(0.1,3,25)[:12]
 # tt_span = np.linspace(0,80,40)[:30]

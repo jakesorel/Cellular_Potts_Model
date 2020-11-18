@@ -101,25 +101,40 @@ for inputt in inputs:
 out = dask.compute(*lazy_results)
 
 
+APt = np.array(out).reshape(15,15,200)
+nAPt = (APt.T - APt[:,:,0].T).T
+
 fig, ax = plt.subplots(figsize=(3.2,3))
-vmin,vmax = np.percentile(np.array(out),10),np.percentile(np.array(out),90)
-ax.imshow(np.array(out).reshape(15,15,200).mean(axis=1),aspect=2,cmap=plt.cm.plasma,extent = [0,1e4,(1e4)/4,(3e4/4)],vmin=vmin,vmax=vmax)
+vmin,vmax = np.percentile(nAPt,10),np.percentile(nAPt,90)
+ax.imshow(nAPt.mean(axis=1),aspect=2,cmap=plt.cm.plasma,extent = [0,1e4,(1e4)/4,(3e4/4)],vmin=vmin,vmax=vmax)
 ax.set(xlabel="Time (MCS)",ylabel=r"$t_0$"" (MCS)")
 sm = plt.cm.ScalarMappable(cmap=plt.cm.plasma,norm=plt.Normalize(vmax=vmax,vmin=vmin))
 sm._A = []
 cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.085, aspect=10, orientation="vertical")#,ticks=np.linspace(0,1,2*N+1)[1::2])
 cl.set_label("Mean axial \n asymmetry")
 fig.subplots_adjust(top=0.9, bottom=0.15, left=0.25, right=0.75,wspace=0.05)
-fig.savefig("unjamming time.pdf",dpi=300)
+fig.savefig("jamming time.pdf",dpi=300)
 
-fig, ax = plt.subplots(figsize=(3.1,3))
-vmax = 0.4
-ax.imshow(np.flip(RPtmean[:12,:30],axis=0),aspect=3600,vmin = 0.15,vmax = vmax,cmap = plt.cm.Greens,extent=[0,1e4 * 8/20 * (61.538/80),0.1,1.4291667])
-ax.set(xlabel="Time (MCS)",ylabel="Relative circumferential \n elastic modulus "r"$(\lambda_P^{XEN} / \lambda_P^{ES})$")
-sm = plt.cm.ScalarMappable(cmap=plt.cm.Greens,norm=plt.Normalize(vmax=vmax,vmin=0.15))
-sm._A = []
-cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.125, aspect=10, orientation="vertical")#,ticks=np.linspace(0,1,2*N+1)[1::2])
-cl.set_label("Normalized XEN \n radial asymmetry")
-fig.subplots_adjust(top=0.9, bottom=0.25, left=0.2, right=0.75,wspace=0.05)
 
-fig.savefig("XEN radial asymmetry vs time.pdf",dpi=300)
+
+def plot_image(ax,i,j,t):
+    I_save = load_npz("CPM/dynamic_jamming/%d_%d.npz" % (i, j)).toarray()
+    I_save = I_save.reshape((n_save, cpm.num_x, cpm.num_y))
+    cpm.I_save = I_save
+
+    Im = cpm.generate_image(I_save[t], res=4, col_dict={"E": "red", "T": "blue", "X": "green"})
+
+    ax.imshow(Im)
+
+fig, ax = plt.subplots(4,4,sharex=True,sharey=True)
+ax = ax.ravel()
+for j in range(15):
+    plot_image(ax[j],j,0,40)
+fig.show()
+
+
+fig, ax = plt.subplots()
+cols = plt.cm.plasma(np.arange(15)/15)
+for i in range(15):
+    plt.plot(nAPt[i, 1].T,color = cols[i])
+fig.show()
