@@ -33,8 +33,8 @@ def do_job(inputt):
     cpm.make_grid(100, 100)
     cpm.tau = 100
     cpm.t0 = t0
-    cpm.lPstart = 5
-    cpm.lPend = 1
+    cpm.lPstart = 1
+    cpm.lPend = 5
     cpm.eta = 1
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,
                                                       eta=cpm.eta)
