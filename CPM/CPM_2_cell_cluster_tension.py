@@ -32,6 +32,7 @@ def do_job(inputt):
     cpm.make_grid(100, 100)
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=beta, gamma=0, delta=0.7, epsilon=0.8, A0=30)
     cpm.lambd_A = lambda_A
+    cpm.lambd_P = lambda_P
     cpm.P0 = P0
     cpm.A0 = A0
     cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
@@ -40,6 +41,7 @@ def do_job(inputt):
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
     cpm.T = T
     cpm.I0 = cpm.I
+    # cpm.run_simulation(int(1e3), int(1e2), polarise=False)
     cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     save_npz("two_cell_results_beta_T/%d_%d.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)

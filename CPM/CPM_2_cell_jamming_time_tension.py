@@ -33,17 +33,16 @@ def do_job(inputt):
     cpm.make_grid(100, 100)
     cpm.tau = 100
     cpm.t0 = t0
-    cpm.lPstart = 1
     cpm.lPend = 5
     cpm.eta = 1
     cpm.beta_start,cpm.beta_end = 0.1,0.6
     lambda_A, lambda_P, W_start, P0, A0 = get_normal_params(p0=8, r=100, beta=cpm.beta_start, gamma=0, delta=0.7, epsilon=0.8, A0=30,
                                                       eta=cpm.eta)
     cpm.lambd_A = lambda_A
-    cpm.lambd_P = lambda_P*cpm.lPstart
+    cpm.lambd_P = lambda_P
     cpm.P0 = P0
     cpm.A0 = A0
-    cpm.generate_cells(N_cell_dict={"E": 8, "T": 8, "X": 0})
+    cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
     cpm.pol_amount = 1
     # for cll in cpm.cells:
     #     if cll.type is "X":
@@ -55,7 +54,8 @@ def do_job(inputt):
     cpm.I0 = cpm.I
     # plt.imshow(cpm.boundary_mask)
     # plt.show()
-    cpm.run_simulation_dynamictension(int(1e4), int(2e2))
+    # cpm.run_simulation_dynamictension(int(1e4), int(2e2))
+    cpm.run_simulation(int(1e3), int(1e2))
 
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     save_npz("dynamic_tension/%d_%d_1.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
