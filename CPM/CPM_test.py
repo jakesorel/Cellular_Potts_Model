@@ -1,4 +1,4 @@
-from CPM import CPM
+from CPM.CPM import CPM
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -35,6 +35,10 @@ cpm.I0 = cpm.I
 t0 = time.time()
 I = cpm.run_simulation(int(5e2),50,polarise=False)
 t1 = time.time()
+
+cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
+cpm.animate()
+
 
 # plt.imshow(cpm.Pol)
 # plt.show()

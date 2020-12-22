@@ -97,7 +97,7 @@ FINALISED FIGURE START
 fig, ax = plt.subplots(figsize=(3.1,3))
 vmax = np.percentile(RPtmean,85)
 vmin = np.percentile(RPtmean,25)
-ax.imshow(np.flip(RPtmean,axis=0),aspect=3600,vmin = vmin,vmax = vmax,cmap = plt.cm.Greens,extent=[0,1e4 *40/200,0.3,1])
+ax.imshow(RPtmean,aspect=3600,vmin = vmin,vmax = vmax,cmap = plt.cm.Greens,extent=[0,1e4 *40/200,0,0.7])
 ax.set(xlabel="Time (MCS)",ylabel="Polarisation magnitude "r"$(\zeta)$")
 sm = plt.cm.ScalarMappable(cmap=plt.cm.Greens,norm=plt.Normalize(vmax=vmax,vmin=0.15))
 sm._A = []

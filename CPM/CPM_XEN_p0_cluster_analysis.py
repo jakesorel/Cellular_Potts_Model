@@ -223,6 +223,8 @@ for cll in cpm.cells:
 def radial_polarity_centroids(centroids,XEN_ids):
     XEN_cells = np.zeros(centroids.shape[0]).astype(np.bool)
     XEN_cells[XEN_ids] = 1
+    nXEN_cells = ~XEN_cells
+    nXEN_cells[0] = False
     centre = centroids.mean(axis=0)
     displT = centroids - centre
     displacementT = np.mean(np.linalg.norm(displT, axis=1))
@@ -231,7 +233,7 @@ def radial_polarity_centroids(centroids,XEN_ids):
     displacementX = np.mean(np.linalg.norm(displX, axis=1))
     # polarityX = np.mean(displX, axis=0)
 
-    displnX = centroids[~XEN_cells] - centre
+    displnX = centroids[nXEN_cells] - centre
     displacementnX = np.mean(np.linalg.norm(displnX, axis=1))
     # polaritynX = np.mean(displnX, axis=0)
 
