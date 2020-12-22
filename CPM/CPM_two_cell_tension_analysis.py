@@ -21,10 +21,12 @@ cpm = CPM()
 cpm.make_grid(100, 100)
 cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
 
+t = -1
+
 def get_num_clusters(i,j):
     I_save = load_npz("CPM/two_cell_results_beta_T/%d_%d.npz" % (i, j)).toarray()
     I_save = I_save.reshape((n_save, cpm.num_x, cpm.num_y))
-    return cpm.find_subpopulations(I_save[-1])
+    return cpm.find_subpopulations(I_save[t])
 
 
 n_slurm_tasks = 8
@@ -63,7 +65,7 @@ beta_spacefine, logT_spacefine = np.linspace(0,1, nfine), np.linspace(0, 2, nfin
 LLf,lTTf = np.meshgrid(beta_spacefine,logT_spacefine,indexing="ij")
 
 
-z = bisplev(beta_space,logT_spacefine, bisplrep(BB.ravel(),np.log10(TT).ravel(),cluster_index.ravel(),s=1))
+z = bisplev(beta_spacefine,logT_spacefine, bisplrep(BB.ravel(),np.log10(TT).ravel(),cluster_index.ravel(),s=2))
 # fig, ax = pl
 # plt.imshow(np.flip(z.T,axis=0),aspect="auto")
 # plt.show()
@@ -74,16 +76,17 @@ z = bisplev(beta_space,logT_spacefine, bisplrep(BB.ravel(),np.log10(TT).ravel(),
 fig, ax = plt.subplots(figsize=(3.2,3))
 extent = [beta_spacefine.min(),beta_spacefine.max(),logT_spacefine.min(),logT_spacefine.max()]
 aspect = (extent[1]-extent[0])/(extent[3]-extent[2])
-vmin,vmax = np.percentile(z,0),np.percentile(z,100)
+vmin,vmax = np.percentile(z,5),np.percentile(z,95)
+# vmin,vmax=0.3,0.
 ax.imshow(np.flip(z.T,axis=0),aspect=aspect,vmin=vmin,vmax=vmax,extent=extent)
-ax.set(ylabel="Activity \n "r"$(log \ T)$",xlabel=r"$\beta$")
+ax.set(ylabel="Activity \n "r"$(log \ T)$",xlabel=r"$\alpha_{ET}$")
 sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis,norm=plt.Normalize(vmax=vmax,vmin=vmin))
 sm._A = []
 cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.085, aspect=10, orientation="vertical")#,ticks=np.linspace(0,1,2*N+1)[1::2])
 cl.set_label("Sorting index")
 fig.subplots_adjust(top=0.9, bottom=0.15, left=0.25, right=0.75,wspace=0.05)
 fig.show()
-fig.savefig("beta T phase diagram smooth.pdf",dpi=300)
+fig.savefig("alpha T phase diagram smooth.pdf",dpi=300)
 
 
 

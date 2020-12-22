@@ -35,7 +35,7 @@ def do_job(inputt):
     cpm.t0 = t0
     cpm.lPend = 5
     cpm.eta = 1
-    cpm.beta_start,cpm.beta_end = 0.1,0.6
+    cpm.beta_start,cpm.beta_end = 0.4,0.8
     lambda_A, lambda_P, W_start, P0, A0 = get_normal_params(p0=8, r=100, beta=cpm.beta_start, gamma=0, delta=0.7, epsilon=0.8, A0=30,
                                                       eta=cpm.eta)
     cpm.lambd_A = lambda_A
