@@ -1045,7 +1045,7 @@ class CPM:
                 except AttributeError: #If cells disappear, freeze all cells for subsequent frames. This is picked up in post-analysis
                     I = I
             if i_save[ni]:
-                self.update_p0(ni)
+                self.update_tension(ni)
                 print(np.round(ni/n_steps * 100),"%")
                 I_save[ns] = I
                 self.I_save = I_save
