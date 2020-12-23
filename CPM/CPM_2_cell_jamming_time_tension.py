@@ -55,9 +55,9 @@ def do_job(inputt):
     # plt.imshow(cpm.boundary_mask)
     # plt.show()
     cpm.run_simulation_dynamictension(int(1e4), int(2e2))
-
-    cpm.generate_image_t(res=4, col_dict={"E": "red", "T": "blue", "X": "green"})
-    cpm.animate()
+    #
+    # cpm.generate_image_t(res=4, col_dict={"E": "red", "T": "blue", "X": "green"})
+    # cpm.animate()
 
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
     save_npz("dynamic_tension/%d_%d_1.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
