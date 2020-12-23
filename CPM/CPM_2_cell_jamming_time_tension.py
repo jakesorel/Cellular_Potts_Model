@@ -71,7 +71,7 @@ if __name__ == "__main__":
     t0_space = np.linspace((1e4)/4,3*(1e4)/4,n_param_step)
     inputs = np.array([np.repeat(t0_space[int(sys.argv[1])],n_rep),np.arange(n_rep)]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
-    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
+    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="2GB")
     lazy_results = []
     for inputt in inputs:
         lazy_result = dask.delayed(do_job)(inputt)
