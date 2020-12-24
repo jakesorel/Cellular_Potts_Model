@@ -975,11 +975,11 @@ class CPM:
 
         lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,eta = self.eta)
 
-        self.lambd_P = lambda_P * lP_mult
-        # self.P0 = P0
-        self.set_lambdP(np.array([0.0, lambda_P* lP_mult, lambda_P* lP_mult, lambda_P* lP_mult]))
+        # self.lambd_P = lambda_P * lP_mult
+        self.P0 = P0*lP_mult
+        # self.set_lambdP(np.array([0.0, lambda_P* lP_mult, lambda_P* lP_mult, lambda_P* lP_mult]))
         # self.make_J(W)
-        # self.set_A0_P0()
+        self.set_A0_P0()
 
 
 

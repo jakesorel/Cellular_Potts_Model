@@ -27,54 +27,38 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0,eta = 1):
 
 
 def do_job(inputt):
-    t0,Id = inputt
-
+    p0,T,Id = inputt
     cpm = CPM()
     cpm.make_grid(100, 100)
-    cpm.tau = 10
-    cpm.t0 = t0
-    cpm.eta = 1
-    cpm.beta_start,cpm.beta_end = 0.4,0.8
-    cpm.lPstart = 1
-    cpm.lPend = 0.6
-    lambda_A, lambda_P, W_start, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,
-                                                      eta=cpm.eta)
+    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30)
     cpm.lambd_A = lambda_A
     cpm.lambd_P = lambda_P
     cpm.P0 = P0
     cpm.A0 = A0
-    cpm.generate_cells(N_cell_dict={"E": 8, "T": 8, "X": 0})
-    cpm.pol_amount = 1
-    # for cll in cpm.cells:
-    #     if cll.type is "X":
-    #         cll.P0 = P0*1
+    cpm.generate_cells(N_cell_dict={"E": 10, "T": 10, "X": 0})
     cpm.set_lambdP(np.array([0.0, cpm.lambd_P, cpm.lambd_P, cpm.lambd_P]))
-    cpm.make_J(W_start)  # ,sigma = np.ones_like(W)*0.2)
+    cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
     cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
-    cpm.T = 15
-    # cpm.I0 = np.load("I0_xenout.npy")
+    cpm.T = T
     cpm.I0 = cpm.I
-    # cpm.I = cpm.I0
-    # plt.imshow(cpm.boundary_mask)
-    # plt.show()
-    cpm.run_simulation_dynamicp0(int(2e3), int(1e2))
-    #
-    cpm.generate_image_t(res=4, col_dict={"E": "red", "T": "blue", "X": "green"})
-    cpm.animate()
-
+    cpm.run_simulation(int(1e3), int(1e2), polarise=False)
+    # cpm.run_simulation(int(1e4), int(2e2), polarise=False)
     I_SAVE = csc_matrix(cpm.I_save.reshape((cpm.num_x, cpm.num_y * cpm.I_save.shape[0])))
-    save_npz("dynamic_tension/%d_%d_1.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
+    save_npz("two_cell_results_p0_T/%d_%d.npz"%(int(sys.argv[1]),int(Id)), I_SAVE)
 
 
 if __name__ == "__main__":
-    if not os.path.exists("dynamic_tension"):
-        os.makedirs("dynamic_tension")
+    if not os.path.exists("two_cell_results_p0_T"):
+        os.makedirs("two_cell_results_p0_T")
     n_param_step = int(sys.argv[2])
     n_rep = int(sys.argv[3])
-    t0_space = np.linspace((1e4)/4,3*(1e4)/4,n_param_step)
-    inputs = np.array([np.repeat(t0_space[int(sys.argv[1])],n_rep),np.arange(n_rep)]).T
+    p0_space, T_space = np.linspace(3,12,n_param_step),np.logspace(0,2,n_param_step)
+    PP,TT = np.meshgrid(p0_space, T_space,indexing="ij")
+    inputs = np.array([PP.ravel(),TT.ravel()]).T
+    input = inputs[int(sys.argv[1])]
+    inputs = np.array([np.repeat(input[0],n_rep),np.repeat(input[1],n_rep),np.arange(n_rep)]).T
     n_slurm_tasks = int(os.environ["SLURM_NTASKS"])
-    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="2GB")
+    client = Client(threads_per_worker=1, n_workers=n_slurm_tasks,memory_limit="1GB")
     lazy_results = []
     for inputt in inputs:
         lazy_result = dask.delayed(do_job)(inputt)
