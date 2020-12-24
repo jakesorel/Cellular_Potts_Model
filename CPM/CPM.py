@@ -959,12 +959,12 @@ class CPM:
         return start + (end-start)*(0.5+0.5*np.tanh((t-t0)/(tau)))
 
     def update_p0(self,t):
-        lP_mult = self.dynamic_var(t,self.t0,self.lPstart,self.lPend,self.tau)
+        p0 = self.dynamic_var(t,self.t0,self.p0start,self.p0end,self.tau)
 
         def get_normal_params(p0, r, beta, gamma, delta, epsilon, A0, eta):
             """K = 1"""
             P0 = p0 * np.sqrt(A0)
-            lambda_P = A0 / r * lP_mult
+            lambda_P = A0 / r
             J00 = -P0 * A0 / r * eta
             lambda_A = 1
             W = J00 * np.array([[0, 0, 0, 0],
@@ -973,10 +973,10 @@ class CPM:
                                 [0, (1 - delta), (1 - delta), (1 - epsilon)]])
             return lambda_A, lambda_P, W, P0, A0
 
-        lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,eta = self.eta)
+        lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=p0, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30,eta = self.eta)
 
         # self.lambd_P = lambda_P * lP_mult
-        self.P0 = P0*lP_mult
+        self.P0 = P0
         # self.set_lambdP(np.array([0.0, lambda_P* lP_mult, lambda_P* lP_mult, lambda_P* lP_mult]))
         # self.make_J(W)
         self.set_A0_P0()
