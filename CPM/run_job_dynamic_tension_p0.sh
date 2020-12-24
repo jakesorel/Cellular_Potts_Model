@@ -12,4 +12,4 @@
 
 source activate apical_domain
 
-python CPM_2_cell_jamming_time_tension_p0.py "$1" "$2" "$3"
+python CPM_2_cell_jamming_time_p0.py "$1" "$2" "$3"
