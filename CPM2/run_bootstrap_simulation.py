@@ -30,6 +30,7 @@ if __name__ == "__main__":
                     [0, (1-delta),(1-delta),(1-epsilon)]])
         return lambda_A,lambda_P,W,P0,A0
 
+
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=10, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
 
     b_e = -0.5
