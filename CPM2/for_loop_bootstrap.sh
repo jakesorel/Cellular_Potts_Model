@@ -16,5 +16,5 @@ do
 #    ((start = "$i"*"$Nper"))
 #    ((end = "$i"*"$Nper" + "$Nper"))
 
-  sbatch --array [0-"$Nperm1"] run_bootstrap_simulation.sh "$i" "$Nperm1"
+  sbatch --array [0-"$Nperm1"] run_bootstrap_simulation.sh "$i" "$Nper"
 done
