@@ -58,9 +58,9 @@ if __name__ == "__main__":
     cpm.J = -adhesion_vals_full*6.
     cpm.get_J_diff()
     t0 = time.time()
-    cpm.simulate(int(1e7),int(1000))
+    cpm.simulate(int(1e4),int(1000))
     # t1 = time.time()
-    cpm.save_simulation("results/bootstrap",iter_i)
+    cpm.save_simulation("results/bootstrap",str(iter_i))
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()
