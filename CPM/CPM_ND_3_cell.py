@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from line_profiler import LineProfiler
-import dask
-from dask.distributed import Client
-from joblib import Parallel, delayed
-import multiprocessing
+# import dask
+# from dask.distributed import Client
+# from joblib import Parallel, delayed
+# import multiprocessing
 from numba import jit
 
 
@@ -26,24 +26,37 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
     return lambda_A,lambda_P,W,P0,A0
 
 
+"""ES-ES      1.911305
+TS-TS      2.161360
+XEN-XEN    0.529589
+TS-ES      0.494644
+XEN-TS     0.420959
+XEN-ES     0.505116
+dtype: float64"""
 
 
 cpm = CPM()
 cpm.make_grid(100, 100)
 lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=8, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
+
+W = np.array([[0,0,0,0],
+              [0,1.911305,0.494644,0.505116],
+              [0,0.494644,2.161360,0.420959],
+              [0,0.505116,0.420959,0.529589]])*-6.02
+
 cpm.lambd_A = lambda_A
 cpm.lambd_P = lambda_P
 cpm.P0 = P0
 cpm.A0 = A0
-cpm.generate_cells(N_cell_dict={"E": 10, "T": 10,"X":14})
-cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P,lambda_P]))
+cpm.generate_cells(N_cell_dict={"E": 10, "T": 10,"X":4})
+cpm.set_lambdP(np.array([0.0, lambda_P, lambda_P,lambda_P*0.3]))
 cpm.make_J(W)  # ,sigma = np.ones_like(W)*0.2)
 cpm.make_init("circle", np.sqrt(cpm.A0 / np.pi) * 0.8, np.sqrt(cpm.A0 / np.pi) * 0.2)
 cpm.T = 15
 cpm.I0 = cpm.I
 plt.imshow(cpm.boundary_mask)
 plt.show()
-cpm.run_simulation(int(2e3), int(1e2), polarise=False)
+cpm.run_simulation(int(2e3), int(40), polarise=False)
 cpm.generate_image_t(res=4,col_dict={"E":"red","T":"blue","X":"green"})
 cpm.animate()
 

@@ -1056,61 +1056,6 @@ class CPM:
 
 
 
-    #
-    #
-    #
-    #
-    # def do_steps(self,I):
-    #     for ni in range(self.n_steps):
-    #         i, j = random.choice(self.xy_clls_tup)
-    #         # i,j = list(self.xy_clls)[int(np.random.random()*len(self.xy_clls))]
-    #         #Pick a site i,j, State is s
-    #         s = I[i,j]
-    #
-    #         s2 = self.get_s2(I,i,j)
-    #         if s2 == s:
-    #             I = I
-    #         elif s==0:
-    #             z2, Na = self.get_z(I,i,j,s2)
-    #             LA2 = self.LA(s2,Na,z2)
-    #             if LA2.any():
-    #                 dH, I2 = self.get_dH(I,i,j,s,s2,None,z2,None,LA2)
-    #                 # print(LA)
-    #                 dJ = self.get_dJ(I, I2, i, j, s, s2)
-    #                 I = self.perform_transform(dH,I,I2,s,s2,None,None,i,j)
-    #         elif s2==0:
-    #             z, Na = self.get_z(I,i,j,s)
-    #             LA = self.LA(s,Na,z)
-    #             if LA.any():
-    #                 # print(LA)
-    #
-    #                 dH, I2 = self.get_dH(I, i, j, s, s2,z,None,LA,None)
-    #                 dJ = self.get_dJ(I, I2, i, j, s, s2)
-    #
-    #                 I =  self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
-    #         else:
-    #             z, Na = self.get_z(I,i,j,s)
-    #             LA = self.LA(s,Na,z)
-    #             if LA.any():
-    #                 z2, Na = self.get_z(I, i, j, s2)
-    #                 LA2 = self.LA(s2, Na, z2)
-    #                 if LA2.any():
-    #                     # print(LA)
-    #                     dH, I2 = self.get_dH(I, i, j, s, s2, z, z2, LA, LA2)
-    #                     dJ = self.get_dJ(I, I2, i, j, s, s2)
-    #                     I =  self.perform_transform(dH,I,I2,s,s2,z,LA,i,j)
-    #     return I
-    #
-    # def run_simulation_profile(self,n_steps):
-    #     I = self.I
-    #     self.get_xy_clls(I)
-    #     self.n_steps = n_steps
-    #     lp = LineProfiler()
-    #     lp_wrapper = lp(self.do_steps)
-    #     lp_wrapper(self.I0)
-    #     lp.print_stats()
-    #     return
-
 
     def generate_image(self,I, res = 8,col_dict={"E":"red","T":"blue"},background=np.array([0,0,0,0.6])):
         I_scale = np.repeat(np.repeat(I, res, axis=0), res, axis=1)
@@ -1439,58 +1384,6 @@ def _get_s2_pol(I, i, j):
     return s2,np.array([ni[0]+1,ni[1]+j])
 
 
-
-# @jit(cache=True, nopython=True)
-# def _get_ij(xy_clls):
-#     opts = tuple(xy_clls)
-#     return tuple(xy_clls)[int(np.random.random()*len(xy_clls))]
-
-#
-# @jit
-# def _update_xy_clls(i,j,z,LA,I,I2,b_change,PE,Moore,xy_clls,n_bound):
-#     Pa = PE[i-1:i+2,j-1:j+2].copy()
-#     # if z is None:
-#     #     z,Na = _get_z(I,i,j,0)
-#     #     b_change = -Na.take([1,3,5,7])!=0 + I2[i-1:i+2,j-1:j+2].take([1,3,5,7])==0
-#     #     b_change = b_change.reshape(3,3)
-#     #     b_change[1,1] = -4+2*z
-#     # else:
-#     # b_change = B_change[LA]
-#
-#     PE[i-1:i+2,j-1:j+2] = Pa + b_change
-#     Pa_new = PE[i - 1:i + 2, j - 1:j + 2]
-#
-#     rm_xy_clls = ((Pa_new==0)*(Pa!=0)).ravel()
-#     n_rm = np.sum(rm_xy_clls)
-#     add_xy_clls = ((Pa_new!=0)*(Pa==0)).ravel()
-#     n_add = np.sum(add_xy_clls)
-#     sample_xy_clls = Moore + np.array([i, j])
-#
-#     for k, rmi in enumerate(rm_xy_clls):
-#         if rmi is True:
-#             sample_xy_clls[k]
-#
-#     if n_rm!=0:
-#         print(sample_xy_clls[rm_xy_clls[0]])
-#         print(sample_xy_clls[rm_xy_clls[0]].dtype)
-#         for k in range(n_rm):
-#             if k ==0:
-#                 rm_mat = (xy_clls - sample_xy_clls[rm_xy_clls[k]])==0
-#             else:
-#                 rm_mat = rm_mat + (xy_clls - sample_xy_clls[rm_xy_clls[k]])==0
-#         # xy_clls = xy_clls[rm_mat]
-#
-#     if n_add!=0:
-#         xy_add = sample_xy_clls[add_xy_clls]
-#
-#     # n_clls =
-#     # if np.sum(rm_xy_clls)!=0:
-#     #     xy_clls =
-#     #     xy_clls -= set((map(tuple,sample_xy_clls[rm_xy_clls.ravel()])))
-#     # if sum(sum(add_xy_clls))!=0:
-#     #     self.xy_clls.update(list(map(tuple,sample_xy_clls[add_xy_clls.ravel()])))
-#     return PE,xy_clls
-
 @jit(cache=True, nopython=True)
 def _sample_xy_clls(Moore,i,j):
     return Moore + np.array([i, j])
@@ -1499,20 +1392,6 @@ def _sample_xy_clls(Moore,i,j):
 def _H(A, P, lambda_A, lambda_P, A0, P0):
     return lambda_A * (A - A0) ** 2 + lambda_P * (P - P0) ** 2
 
-# @jit(cache=True, nopython=True)
-# def _H(A, P, lambda_A, lambda_P, A0, P0):
-#     return lambda_A * (A - A0) ** 2 + lambda_P * P** 2
-# #
-# @jit(cache=True, nopython=True)
-# def _H_ND(A, P, r,p0,A0):
-#     r = lambda_A*A0/lambda_P
-#     return (A/np.sqrt(A0) - 1) ** 2 + (P/np.sqrt(A0) -p0)** 2
-# # #
-#
-# @jit(cache=True, nopython=True)
-# def _H(A, P, lambda_A, lambda_P, A0, P0):
-#     return lambda_A * ((A - A0)/A0) ** 2 + lambda_P * ((P - P0)/P0) ** 2
-#
 
 @jit(cache=True, nopython=True)
 def _get_dJ(J,I, I2, i, j, s, s2):
