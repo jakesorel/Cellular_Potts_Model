@@ -64,3 +64,4 @@ if __name__ == "__main__":
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()
+
