@@ -96,15 +96,15 @@ if __name__ == "__main__":
     if not os.path.exists("results/compiled/scrambled"):
         os.mkdir("results/compiled/scrambled")
 
-
-    I_save_sparse = cPickle.load(bz2.BZ2File("results/bootstrap/%d.pbz2"%iter_i, 'rb'))
-
-    cc,next = get_top_values_t(I_save_sparse)
-
-    df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
-                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2]})
-    df.to_csv("results/compiled/bootstrap/%d.csv"%iter_i)
-
+    #
+    # I_save_sparse = cPickle.load(bz2.BZ2File("results/bootstrap/%d.pbz2"%iter_i, 'rb'))
+    #
+    # cc,next = get_top_values_t(I_save_sparse)
+    #
+    # df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
+    #               "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2]})
+    # df.to_csv("results/compiled/bootstrap/%d.csv"%iter_i)
+    #
 
 
     I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2"%iter_i, 'rb'))
