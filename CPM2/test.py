@@ -32,7 +32,7 @@ W = np.array([[b_e,b_e,b_e,b_e],
 params = {"A0":[A0,A0,A0],
           "P0":[P0,P0,P0],
           "lambda_A":[lambda_A,lambda_A,lambda_A],
-          "lambda_P":[lambda_P,lambda_P,lambda_P],
+          "lambda_P":[lambda_P,lambda_P,lambda_P*0.3],
           "W":W,
           "T":15}
 cpm = CPM(params)
@@ -40,16 +40,16 @@ cpm.make_grid(100, 100)
 cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
 cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
 iter_i = 0
-adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
-adhesion_vals_full[0] = b_e
-adhesion_vals_full[:,0] = b_e
-adhesion_vals_full[0,0] = 0
-cpm.J = -adhesion_vals_full*6.
+# adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+# adhesion_vals_full[0] = b_e
+# adhesion_vals_full[:,0] = b_e
+# adhesion_vals_full[0,0] = 0
+# cpm.J = -adhesion_vals_full*6.
 cpm.get_J_diff()
 t0 = time.time()
-cpm.simulate(int(5e5),int(20))
+cpm.simulate(int(1e5),int(20))
 t1 = time.time()
-cpm.save_simulation("results","test_sim")
+# cpm.save_simulation("results","test_sim_soft")
 print(t1-t0)
 cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
 cpm.animate()
