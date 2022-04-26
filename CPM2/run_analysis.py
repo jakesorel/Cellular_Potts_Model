@@ -97,7 +97,7 @@ if __name__ == "__main__":
         os.mkdir("results/compiled/scrambled")
 
 
-    I_save_sparse = cPickle.load(bz2.BZ2File("results/bootstrap/%d.pbz2", 'rb'))
+    I_save_sparse = cPickle.load(bz2.BZ2File("results/bootstrap/%d.pbz2"%iter_i, 'rb'))
 
     cc,next = get_top_values_t(I_save_sparse)
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
 
 
-    I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2", 'rb'))
+    I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2"%iter_i, 'rb'))
 
     cc,next = get_top_values_t(I_save_sparse)
 
