@@ -52,7 +52,7 @@ if __name__ == "__main__":
     def get_n_external(adj):
         i,j = np.nonzero(adj)
         j_out = j[i==0]
-        return np.bincount(c_types.take(j_out))[1:]
+        return np.bincount(c_types.take(j_out),minlength=4)[1:]
 
 
 
