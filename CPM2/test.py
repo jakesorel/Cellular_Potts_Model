@@ -26,11 +26,11 @@ b_e = 0
 W = np.array([[b_e,b_e,b_e,b_e],
               [b_e,1.911305,0.494644,0.505116],
               [b_e,0.494644,2.161360,0.420959],
-              [b_e,0.505116,0.420959,0.529589]])*90
+              [b_e,0.505116,0.420959,0.529589]])*120
 
-lambda_A = 1
-lambda_P = 0.2
-lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.5]
+lambda_A = 4
+lambda_P = 0.4
+lambda_Ps = [0,lambda_P,lambda_P,lambda_P]
 
 lambda_mult = np.zeros((4,4))
 for i in range(4):
@@ -48,7 +48,7 @@ params = {"A0":[A0,A0,A0],
           "T":15}
 # np.random.seed(2022)
 cpm = CPM(params)
-cpm.make_grid(100, 100)
+cpm.make_grid(150,150)
 cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
 cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
 iter_i = 10
@@ -65,9 +65,38 @@ cpm.J *= lambda_mult
 
 # cpm.get_J_diff()
 t0 = time.time()
-cpm.simulate(int(5e4),int(20))
+cpm.simulate(int(2e5),int(20))
 t1 = time.time()
 # cpm.save_simulation("results","test_sim_soft")
 print(t1-t0)
 cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
 cpm.animate()
+
+from numba import jit
+from scipy import sparse
+
+I_sparse = sparse.csr_matrix(cpm.I)
+
+# @jit(nopython=True)
+def nonzero(I_sparse):
+    return I_sparse.nonzero()
+
+t0 = time.time()
+for i in range(int(5e4)):
+    nonzero(I_sparse)
+t1 =time.time()
+print(t1-t0)
+
+I,J = np.mgrid[:300,:300]
+I = I.ravel()
+J = J.ravel()
+
+def ij_in_IJ(i,j,I,J):
+    n = I.size
+    k = 0
+    cont
+
+
+
+
+
