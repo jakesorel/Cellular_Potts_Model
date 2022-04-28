@@ -16,24 +16,11 @@ if __name__ == "__main__":
 
     iter_i = int(sys.argv[1])
 
-
-
-    def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
-        """K = 1"""
-        P0 = p0*np.sqrt(A0)
-        lambda_P = A0/r
-        J00 = -P0*lambda_P
-        lambda_A = 1
-        W = J00*np.array([[0, 0, 0,0],
-                    [0, 1, (1-beta),(1-delta)],
-                    [0, (1-beta), (1+gamma),(1-delta)],
-                    [0, (1-delta),(1-delta),(1-epsilon)]])
-        return lambda_A,lambda_P,W,P0,A0
-
-
-    lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=10, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
-
-    b_e = -0.5
+    lambda_A = 1
+    lambda_P = 0.2
+    A0 = 30
+    P0 = 0
+    b_e = -0.2
 
     W = np.array([[b_e,b_e,b_e,b_e],
                   [b_e,1.911305,0.494644,0.505116],
@@ -55,7 +42,13 @@ if __name__ == "__main__":
     adhesion_vals_full[0] = b_e
     adhesion_vals_full[:,0] = b_e
     adhesion_vals_full[0,0] = 0
-    cpm.J = -adhesion_vals_full*6.
+    cpm.J = -adhesion_vals_full * 90
+    lambda_mult = np.zeros((len(cpm.lambda_P), len(cpm.lambda_P)))
+    for i in range(len(cpm.lambda_P)):
+        lambda_mult[i:] = cpm.lambda_P
+    # lambda_mult[0] = lambda_Ps
+    cpm.J *= lambda_mult
+
     cpm.get_J_diff()
     t0 = time.time()
     cpm.simulate(int(1e7),int(1000))
