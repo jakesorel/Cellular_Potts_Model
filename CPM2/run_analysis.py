@@ -51,14 +51,14 @@ if __name__ == "__main__":
 
 
     #
-    # def get_n_external(adj):
-    #     i,j = np.nonzero(adj)
-    #     j_out = j[i==0]
-    #     return np.bincount(c_types.take(j_out),minlength=4)[1:]
-
-
-
     def get_n_external(adj):
+        i,j = np.nonzero(adj)
+        j_out = j[i==0]
+        return np.bincount(c_types.take(j_out),minlength=4)[1:]
+
+
+
+    def get_n_external_2(adj):
         n_ext = np.zeros(3,dtype=int)
         b_mask = np.zeros_like(E_mask)
         b_mask[0]=True
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         return most_external
 
 
-    def get_n_external_alt(I_sparse):
+    def get_n_external_3(I_sparse):
         I = I_sparse.toarray()
         mid_pt = np.array(center_of_mass(I != 0))
         r_max = (100 - mid_pt).min()
@@ -124,7 +124,8 @@ if __name__ == "__main__":
     def get_top_values(I_sparse):
         adj = get_adj(I_sparse)
         conn_comp = get_conn_comp(adj)
-        n_external = get_n_external_alt(I_sparse)
+        n_external = get_n_external(adj)
+        # n_external = get_n_external_alt(I_sparse)
         return conn_comp,n_external
 
 
@@ -134,7 +135,8 @@ if __name__ == "__main__":
         for t, I_sparse in enumerate(I_save_sparse):
             adj = get_adj(I_sparse)
             conn_comp_t[t] = get_conn_comp(adj)
-            n_external_t[t] = get_n_external_alt(I_sparse)
+            n_external_t[t] = get_n_external(adj)
+            # n_external_t[t] = get_n_external_alt(I_sparse)
         return conn_comp_t,n_external_t
 
     iter_i = int(sys.argv[1])
@@ -159,12 +161,12 @@ if __name__ == "__main__":
         os.mkdir("results/compiled/stiff")
 
 
-    if not os.path.exists("results/compiled/soft_p0"):
-        os.mkdir("results/compiled/soft_p0")
-
-
-    if not os.path.exists("results/compiled/stiff_p0"):
-        os.mkdir("results/compiled/stiff_p0")
+    # if not os.path.exists("results/compiled/soft_p0"):
+    #     os.mkdir("results/compiled/soft_p0")
+    #
+    #
+    # if not os.path.exists("results/compiled/stiff_p0"):
+    #     os.mkdir("results/compiled/stiff_p0")
 
     #
     #
