@@ -11,8 +11,8 @@ if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
 
-    if not os.path.exists("results/soft_p0"):
-        os.mkdir("results/soft_p0")
+    if not os.path.exists("results/stiff"):
+        os.mkdir("results/stiff")
 
     iter_i = int(sys.argv[1])
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     t0 = time.time()
     cpm.simulate(int(1e7),int(1000))
     # t1 = time.time()
-    cpm.save_simulation("results/soft",str(iter_i))
+    cpm.save_simulation("results/stiff",str(iter_i))
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()

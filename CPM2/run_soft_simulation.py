@@ -11,8 +11,8 @@ if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
 
-    if not os.path.exists("results/soft_p0"):
-        os.mkdir("results/soft_p0")
+    if not os.path.exists("results/soft"):
+        os.mkdir("results/soft")
 
     iter_i = int(sys.argv[1])
 
