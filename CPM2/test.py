@@ -17,7 +17,7 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
 
 lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=10, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
 
-b_e = -0.5
+b_e = -0.2
 # W = np.array([[0,0,0,0],
 #               [0,1.911305,0.494644,0.505116],
 #               [0,0.494644,2.161360,0.420959],
@@ -30,16 +30,16 @@ W = np.array([[b_e,b_e,b_e,b_e],
 
 
 params = {"A0":[A0,A0,A0],
-          "P0":[P0,P0,P0],
+          "P0":[P0,P0,P0*1.3],
           "lambda_A":[lambda_A,lambda_A,lambda_A],
-          "lambda_P":[lambda_P,lambda_P,lambda_P*0.3],
+          "lambda_P":[lambda_P,lambda_P,lambda_P],
           "W":W,
           "T":15}
 cpm = CPM(params)
 cpm.make_grid(100, 100)
 cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
 cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
-iter_i = 0
+iter_i = 10
 # adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
 # adhesion_vals_full[0] = b_e
 # adhesion_vals_full[:,0] = b_e

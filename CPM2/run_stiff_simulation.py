@@ -11,8 +11,8 @@ if __name__ == "__main__":
     if not os.path.exists("results"):
         os.mkdir("results")
 
-    if not os.path.exists("results/stiff"):
-        os.mkdir("results/stiff")
+    if not os.path.exists("results/stiff_p0"):
+        os.mkdir("results/stiff_p0")
 
     iter_i = int(sys.argv[1])
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=10, r=100, beta=0.4, gamma=0, delta=0.7,epsilon=0.8, A0=30)
 
-    b_e = -0.5
+    b_e = -0.2
 
     W = np.array([[b_e,b_e,b_e,b_e],
                   [b_e,1.911305,0.494644,0.505116],
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
 
     params = {"A0":[A0,A0,A0],
-              "P0":[P0,P0,P0],
+              "P0":[P0,P0,P0*1.3],
               "lambda_A":[lambda_A,lambda_A,lambda_A],
               "lambda_P":[lambda_P,lambda_P,lambda_P],
               "W":W,
@@ -51,16 +51,16 @@ if __name__ == "__main__":
     cpm.make_grid(100, 100)
     cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
     cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
-    # adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
-    # adhesion_vals_full[0] = b_e
-    # adhesion_vals_full[:,0] = b_e
-    # adhesion_vals_full[0,0] = 0
-    # cpm.J = -adhesion_vals_full*6.
-    # cpm.get_J_diff()
+    adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+    adhesion_vals_full[0] = b_e
+    adhesion_vals_full[:,0] = b_e
+    adhesion_vals_full[0,0] = 0
+    cpm.J = -adhesion_vals_full*6.
+    cpm.get_J_diff()
     t0 = time.time()
     cpm.simulate(int(1e7),int(1000))
     # t1 = time.time()
-    cpm.save_simulation("results/stiff",str(iter_i))
+    cpm.save_simulation("results/stiff_p0",str(iter_i))
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()
