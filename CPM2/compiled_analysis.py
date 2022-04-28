@@ -30,14 +30,14 @@ sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 fig.show()
 
 
-soft_df = load_compiled_data("results/compiled/soft")
+soft_df = load_compiled_data("results/compiled/soft_p0")
 soft_df["X_external"] = soft_df["X_ex"] == 6
-stiff_df = load_compiled_data("results/compiled/stiff")
+stiff_df = load_compiled_data("results/compiled/stiff_p0")
 stiff_df["X_external"] = stiff_df["X_ex"] == 6
 fig, ax = plt.subplots()
 sns.lineplot(x="t",y="X_external",data=soft_df,ax=ax)
 sns.lineplot(x="t",y="X_external",data=stiff_df,ax=ax)
-sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
+# sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 
 fig.show()
 

@@ -101,20 +101,33 @@ class CPM:
             x0s,y0s = x_mid + grid_spacing_x, y_mid + grid_spacing_y
             X0,Y0 = np.meshgrid(x0s,y0s,indexing="ij")
             X0,Y0 = np.concatenate([X0[::2,::2].ravel(),X0[1::2,1::2].ravel()]),np.concatenate([Y0[::2,::2].ravel(),Y0[1::2,1::2].ravel()])
-            grid_choice = np.arange(X0.size)
-            random.shuffle(grid_choice)
-            grid_choice = grid_choice[:self.n_cells]
-            for k in range(self.n_cells):
+            X0 += np.random.uniform(0,0.01,X0.shape)
+            Y0 += np.random.uniform(0,0.01,Y0.shape)
+            dist_to_mid = (X0-x_mid)**2 + (X0-y_mid)**2
+            # grid_choice = np.arange(X0.size)
+            grid_choice = np.argsort(dist_to_mid)
+            k = 0
+            cell_index = np.arange(self.n_cells)
+            random.shuffle(cell_index)
+            while k < self.n_cells:
                 x0,y0 = X0[grid_choice[k]],Y0[grid_choice[k]]
                 cll_r = np.sqrt(self.A0[k+1]/np.pi)*0.8
-                self.I0[(X-x0+0.5)**2 + (Y-y0+0.5)**2 <= cll_r**2] = k+1
+                self.I0[(X-x0+0.5)**2 + (Y-y0+0.5)**2 <= cll_r**2] = cell_index[k]+1
+                k+=1
+
+            #
+            # grid_choice = grid_choice[:self.n_cells]
+            # for k in range(self.n_cells):
+            #     x0,y0 = X0[grid_choice[k]],Y0[grid_choice[k]]
+            #     cll_r = np.sqrt(self.A0[k+1]/np.pi)*0.8
+            #     self.I0[(X-x0+0.5)**2 + (Y-y0+0.5)**2 <= cll_r**2] = k+1
         self.I = self.I0.copy()
         self.assign_AP()
 
     def assign_AP(self):
         self.A = np.zeros(self.n_cells+1,dtype=int)
         self.P = np.zeros(self.n_cells+1,dtype=int)
-        for cll in self.cell_ids[1:]:
+        for cll in self.cell_ids:
             self.P[cll],self.A[cll] = self.get_perimeter_and_area(self.I,cll)
 
     def get_perimeter_and_area(self,I,s):
