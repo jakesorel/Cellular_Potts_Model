@@ -16,16 +16,24 @@ def load_compiled_data(folder):
     df_all.index = np.arange(df_all.shape[0])
     return df_all
 
-bootstrap_df = load_compiled_data("results/compiled/stiff")
+"""
+Need to check the externalisation analysis again. May just be a zip updating problem. 
+
+And in the analysis, need to flag up cases where cells exist in isolation. For example, could crop the simulation to the largest aggregate. 
+"""
+
+
+bootstrap_df = load_compiled_data("results/compiled/soft")
 bootstrap_df["X_external"] = bootstrap_df["X_ex"] == 6
 bootstrap_df["T_sorted"] = bootstrap_df["T_cc"] == 1
 bootstrap_df["E_sorted"] = bootstrap_df["E_cc"] == 1
 bootstrap_df["ET_sorted"] =( bootstrap_df["E_cc"] == 1)*( bootstrap_df["T_cc"] == 1)
 
 fig, ax = plt.subplots()
-sns.lineplot(x="t",y="E_cc",data=bootstrap_df,ax=ax)
-sns.lineplot(x="t",y="T_cc",data=bootstrap_df,ax=ax)
-sns.lineplot(x="t",y="X_ex",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="E_sorted",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="T_sorted",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="ET_sorted",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 fig.show()
 
 bootstrap_df["X_external"] = bootstrap_df["X_ex"] == 6
@@ -44,6 +52,9 @@ stiff_df["X_external"] = stiff_df["X_ex"] == 6
 fig, ax = plt.subplots()
 sns.lineplot(x="t",y="X_external",data=soft_df,ax=ax,label="Soft")
 sns.lineplot(x="t",y="X_external",data=stiff_df,ax=ax,label="Stiff")
+# sns.lineplot(x="t",y="X_cc",data=soft_df,ax=ax,label="Soft")
+# sns.lineplot(x="t",y="X_cc",data=stiff_df,ax=ax,label="Stiff")
+
 # sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 fig.show()
 

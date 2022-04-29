@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     iter_i = int(sys.argv[1])
 
-    lambda_A = 4
+    lambda_A = 1
     lambda_P = 0.4
     A0 = 30
     P0 = 0
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     adhesion_vals_full[0] = b_e
     adhesion_vals_full[:,0] = b_e
     adhesion_vals_full[0,0] = 0
-    cpm.J = -adhesion_vals_full * 90
+    cpm.J = -adhesion_vals_full * 20*0.4
     lambda_mult = np.zeros((len(cpm.lambda_P), len(cpm.lambda_P)))
     for i in range(len(cpm.lambda_P)):
         lambda_mult[i:] = cpm.lambda_P
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     cpm.get_J_diff()
     t0 = time.time()
-    cpm.simulate(int(2e6),int(1000))
+    cpm.simulate(int(1e7),int(1000))
     # t1 = time.time()
     cpm.save_simulation("results/soft",str(iter_i))
     # print(t1-t0)

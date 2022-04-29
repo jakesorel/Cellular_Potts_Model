@@ -15,7 +15,17 @@ def get_normal_params(p0, r, beta, gamma,delta,epsilon,A0):
                 [0, (1-delta),(1-delta),(1-epsilon)]])
     return lambda_A,lambda_P,W,P0,A0
 
-lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=0, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30)
+"""
+In the low lambda_P regime, for some unknown reason, structures are breaking down. 
+
+It looks like XEN cells are "pulling" them apart. 
+
+Try: increasing lambdaP and adhesion 
+
+
+"""
+
+lambda_A, lambda_P, W, P0, A0 = get_normal_params(p0=5, r=100, beta=0.4, gamma=0, delta=0.7, epsilon=0.8, A0=30)
 
 b_e = 0
 # W = np.array([[0,0,0,0],
@@ -28,10 +38,10 @@ W = np.array([[b_e,b_e,b_e,b_e],
               [b_e,0.494644,2.161360,0.420959],
               [b_e,0.505116,0.420959,0.529589]])*120
 
-lambda_A = 4
+lambda_A = 1
 lambda_P = 0.4
-lambda_Ps = [0,lambda_P,lambda_P,lambda_P]
-
+lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.3]
+P0 = 30
 lambda_mult = np.zeros((4,4))
 for i in range(4):
     lambda_mult[i:] = lambda_Ps[i]
@@ -56,14 +66,14 @@ adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_
 adhesion_vals_full[0] = b_e
 adhesion_vals_full[:,0] = b_e
 adhesion_vals_full[0,0] = 0
-cpm.J = -adhesion_vals_full*90
-lambda_mult = np.zeros((len(cpm.lambda_P),len(cpm.lambda_P)))
-for i in range(len(cpm.lambda_P)):
-    lambda_mult[i:] = cpm.lambda_P
-# lambda_mult[0] = lambda_Ps
-cpm.J *= lambda_mult
+cpm.J = -adhesion_vals_full*20*0.4
+# lambda_mult = np.zeros((len(cpm.lambda_P),len(cpm.lambda_P)))
+# for i in range(len(cpm.lambda_P)):
+#     lambda_mult[i:] = cpm.lambda_P
+# # lambda_mult[0] = lambda_Ps
+# cpm.J *= lambda_mult
 
-# cpm.get_J_diff()
+cpm.get_J_diff()
 t0 = time.time()
 cpm.simulate(int(2e5),int(20))
 t1 = time.time()
@@ -71,31 +81,6 @@ t1 = time.time()
 print(t1-t0)
 cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
 cpm.animate()
-
-from numba import jit
-from scipy import sparse
-
-I_sparse = sparse.csr_matrix(cpm.I)
-
-# @jit(nopython=True)
-def nonzero(I_sparse):
-    return I_sparse.nonzero()
-
-t0 = time.time()
-for i in range(int(5e4)):
-    nonzero(I_sparse)
-t1 =time.time()
-print(t1-t0)
-
-I,J = np.mgrid[:300,:300]
-I = I.ravel()
-J = J.ravel()
-
-def ij_in_IJ(i,j,I,J):
-    n = I.size
-    k = 0
-    cont
-
 
 
 
