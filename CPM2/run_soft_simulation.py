@@ -38,20 +38,17 @@ if __name__ == "__main__":
     cpm.make_grid(150,150)
     cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
     cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
-    adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+    # adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+    adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+
     adhesion_vals_full[0] = b_e
     adhesion_vals_full[:,0] = b_e
     adhesion_vals_full[0,0] = 0
     cpm.J = -adhesion_vals_full * 20*0.4
-    lambda_mult = np.zeros((len(cpm.lambda_P), len(cpm.lambda_P)))
-    for i in range(len(cpm.lambda_P)):
-        lambda_mult[i:] = cpm.lambda_P
-    # lambda_mult[0] = lambda_Ps
-    cpm.J *= lambda_mult
-
     cpm.get_J_diff()
     t0 = time.time()
     cpm.simulate(int(1e7),int(1000))
+
     # t1 = time.time()
     cpm.save_simulation("results/soft",str(iter_i))
     # print(t1-t0)
