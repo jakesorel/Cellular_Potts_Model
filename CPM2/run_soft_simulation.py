@@ -40,7 +40,7 @@ if __name__ == "__main__":
     cpm.generate_cells(N_cell_dict={"E": 8, "T": 8,"X":6})
     cpm.make_init("circle", np.sqrt(params["A0"][0] / np.pi) * 0.8, np.sqrt(params["A0"][0] / np.pi) * 0.2)
     # adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
-    adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
+    adhesion_vals_full = np.load("../adhesion_matrices/%i.npz" % iter_i).get("adhesion_vals")
 
     adhesion_vals_full[0] = b_e
     adhesion_vals_full[:,0] = b_e
