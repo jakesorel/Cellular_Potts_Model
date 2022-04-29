@@ -11,6 +11,16 @@ import pandas as pd
 
 if __name__ == "__main__":
 
+    """
+    Could determine how many XEN cells are outside by measuring the number of XEN clusters that are completely surrounded by other cell types
+    
+    Algo: 
+    
+    Find the connected components of XEN cells 
+    For each of these, determine whether any of the neighbours are zero
+    If so, the whole cluster is external.  
+    """
+
     c_types = np.zeros(23,dtype=int)
     c_types[1:] = 1
     c_types[9:] = 2
@@ -124,20 +134,25 @@ if __name__ == "__main__":
     def get_top_values(I_sparse):
         adj = get_adj(I_sparse)
         conn_comp = get_conn_comp(adj)
-        n_external = get_n_external(adj)
-        # n_external = get_n_external_alt(I_sparse)
+        n_external_1 = get_n_external(adj)
+        n_external_2 = get_n_external_2(adj)
+        n_external_3 = get_n_external_3(I_sparse)
         return conn_comp,n_external
 
 
     def get_top_values_t(I_save_sparse):
         conn_comp_t = np.zeros((len(I_save_sparse),3),dtype=int)
-        n_external_t = np.zeros((len(I_save_sparse),3),dtype=int)
+        n_external_1_t = np.zeros((len(I_save_sparse),3),dtype=int)
+        n_external_2_t = np.zeros((len(I_save_sparse),3),dtype=int)
+        n_external_3_t = np.zeros((len(I_save_sparse),3),dtype=int)
+
         for t, I_sparse in enumerate(I_save_sparse):
             adj = get_adj(I_sparse)
             conn_comp_t[t] = get_conn_comp(adj)
-            n_external_t[t] = get_n_external(adj)
-            # n_external_t[t] = get_n_external_alt(I_sparse)
-        return conn_comp_t,n_external_t
+            n_external_1_t[t] = get_n_external(adj)
+            n_external_2_t[t] = get_n_external_2(adj)
+            n_external_3_t[t] = get_n_external_3(I_sparse)
+        return conn_comp_t,n_external_1_t,n_external_2_t,n_external_3_t
 
     iter_i = int(sys.argv[1])
 
@@ -180,29 +195,35 @@ if __name__ == "__main__":
     #
     #
 
-    I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2"%iter_i, 'rb'))
-
-    cc,next = get_top_values_t(I_save_sparse)
-
-    df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
-                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2]})
-    df.to_csv("results/compiled/scrambled/%d.csv"%iter_i)
+    # I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2"%iter_i, 'rb'))
+    #
+    # cc,next,next2,next3 = get_top_values_t(I_save_sparse)
+    #
+    # df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
+    #               "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2],
+    #               "E_ex2":next2[:,0],"T_ex2":next2[:,1],"X_ex2":next2[:,2],
+    #               "E_ex3":next3[:,0],"T_ex3":next3[:,1],"X_ex3":next3[:,2]})
+    # df.to_csv("results/compiled/scrambled/%d.csv"%iter_i)
 
 
     I_save_sparse = cPickle.load(bz2.BZ2File("results/soft/%d.pbz2"%iter_i, 'rb'))
 
-    cc,next = get_top_values_t(I_save_sparse)
+    cc,next,next2,next3 = get_top_values_t(I_save_sparse)
 
     df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
-                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2]})
+                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2],
+                  "E_ex2":next2[:,0],"T_ex2":next2[:,1],"X_ex2":next2[:,2],
+                  "E_ex3":next3[:,0],"T_ex3":next3[:,1],"X_ex3":next3[:,2]})
     df.to_csv("results/compiled/soft/%d.csv"%iter_i)
 
 
     I_save_sparse = cPickle.load(bz2.BZ2File("results/stiff/%d.pbz2"%iter_i, 'rb'))
 
-    cc,next = get_top_values_t(I_save_sparse)
+    cc,next,next2,next3 = get_top_values_t(I_save_sparse)
 
     df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,"E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
-                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2]})
+                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2],
+                  "E_ex2":next2[:,0],"T_ex2":next2[:,1],"X_ex2":next2[:,2],
+                  "E_ex3":next3[:,0],"T_ex3":next3[:,1],"X_ex3":next3[:,2]})
     df.to_csv("results/compiled/stiff/%d.csv"%iter_i)
 
