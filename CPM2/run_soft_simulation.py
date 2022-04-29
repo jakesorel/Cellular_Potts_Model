@@ -14,6 +14,7 @@ if __name__ == "__main__":
     if not os.path.exists("results/soft"):
         os.mkdir("results/soft")
 
+
     iter_i = int(sys.argv[1])
 
     lambda_A = 1
