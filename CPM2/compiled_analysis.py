@@ -29,21 +29,24 @@ There probably ought to be some kind of initialisation.
 """
 
 
-bootstrap_df = load_compiled_data("results/compiled/stiff")
-bootstrap_df["X_external"] = bootstrap_df["X_ex2"] == 6
+bootstrap_df = load_compiled_data("results/compiled/soft")
+bootstrap_df["X_external"] = bootstrap_df["X_ex3"] == bootstrap_df["N_X"]
+bootstrap_df["E_external"] = bootstrap_df["E_ex3"] == bootstrap_df["N_E"]
+bootstrap_df["T_external"] = bootstrap_df["T_ex3"] == bootstrap_df["N_T"]
+
 bootstrap_df["T_sorted"] = bootstrap_df["T_cc"] == 1
 bootstrap_df["E_sorted"] = bootstrap_df["E_cc"] == 1
 bootstrap_df["ET_sorted"] =( bootstrap_df["E_cc"] == 1)*( bootstrap_df["T_cc"] == 1)
 
 fig, ax = plt.subplots()
-sns.lineplot(x="t",y="E_sorted",data=bootstrap_df,ax=ax)
-sns.lineplot(x="t",y="T_sorted",data=bootstrap_df,ax=ax)
-sns.lineplot(x="t",y="ET_sorted",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="E_external",data=bootstrap_df,ax=ax)
+sns.lineplot(x="t",y="T_external",data=bootstrap_df,ax=ax)
+# sns.lineplot(x="t",y="ET_sorted",data=bootstrap_df,ax=ax)
 sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 # ax.set(xlim=(0,3e6))
 fig.show()
 
-bootstrap_df["X_external"] = bootstrap_df["X_ex"] == 6
+bootstrap_df["X_external"] = bootstrap_df["X_ex3"] == bootstrap_df["N_X"]
 fig, ax = plt.subplots()
 sns.lineplot(x="t",y="X_external",data=bootstrap_df,ax=ax)
 sns.lineplot(x="t",y="T_sorted",data=bootstrap_df,ax=ax)
@@ -53,12 +56,16 @@ fig.show()
 
 
 soft_df = load_compiled_data("results/compiled/soft")
-soft_df["X_external"] = soft_df["X_ex3"] == 6
+soft_df["X_external"] = soft_df["X_ex3"] == soft_df["N_X"]
+soft_df["E_external"] = soft_df["E_ex3"] == soft_df["N_E"]
+
 stiff_df = load_compiled_data("results/compiled/stiff")
-stiff_df["X_external"] = stiff_df["X_ex3"] == 6
+stiff_df["X_external"] = stiff_df["X_ex3"] == stiff_df["N_X"]
+stiff_df["E_external"] = stiff_df["E_ex3"] == stiff_df["N_E"]
+
 fig, ax = plt.subplots()
-sns.lineplot(x="t",y="T_cc",data=soft_df,ax=ax,label="Soft")
-sns.lineplot(x="t",y="T_cc",data=stiff_df,ax=ax,label="Stiff")
+sns.lineplot(x="t",y="E_external",data=soft_df,ax=ax,label="Soft")
+sns.lineplot(x="t",y="E_external",data=stiff_df,ax=ax,label="Stiff")
 # sns.lineplot(x="t",y="X_cc",data=soft_df,ax=ax,label="Soft")
 # sns.lineplot(x="t",y="X_cc",data=stiff_df,ax=ax,label="Stiff")
 # ax.set(xlim=(0,3e6))

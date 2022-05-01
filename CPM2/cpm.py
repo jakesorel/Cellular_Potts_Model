@@ -138,8 +138,23 @@ class CPM:
         A = np.sum(M)
         return P,A
 
-    def simulate(self,n_step,n_save):
+    def initialize(self,J0,n_initialise_steps=10000):
+        J = self.J.copy()
+        self.J = np.zeros_like(self.J)
+        self.J[1:,1:] = J0
+        self.J = self.J*(1-np.eye(self.J.shape[0]))
+        self.get_J_diff()
+        self.sample.n_steps = n_initialise_steps
+        self.sample.do_steps()
+        self.J = J.copy()
+        self.get_J_diff()
+        print("initialized")
+
+
+    def simulate(self,n_step,n_save,initialize=True,J0=None,n_initialise_steps=10000):
         # self.get_xy_clls(self.I)
+        if initialize:
+            self.initialize(J0,n_initialise_steps)
         self.n_step = n_step
         self.skip = int(n_step/n_save)
         self.sample.n_steps = self.skip
@@ -148,7 +163,7 @@ class CPM:
         self.n_save = len(self.t_save)
         self.I_save = np.zeros((self.n_save+1,self.num_x,self.num_y),dtype=int)
         n_steps = int(n_step/self.skip)
-        self.I_save[0] = self.I0.copy()
+        self.I_save[0] = self.I.copy()
         for i in range(n_steps):
             self.sample.do_steps()
             self.I_save[i+1] = self.I.copy()

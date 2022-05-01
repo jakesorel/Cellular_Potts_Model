@@ -75,10 +75,10 @@ cpm.J = -adhesion_vals_full*20*0.4*0
 
 cpm.get_J_diff()
 t0 = time.time()
-cpm.simulate(int(2e4),int(20))
+cpm.simulate(int(2e4),int(20),initialize=True,J0 = -8)
 t1 = time.time()
-cpm.save_simulation("results","test_sim_soft")
-print(t1-t0)
+# cpm.save_simulation("results","test_sim_soft")
+# print(t1-t0)
 
 
 cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
