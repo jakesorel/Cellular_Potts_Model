@@ -140,6 +140,8 @@ class CPM:
 
     def initialize(self,J0,n_initialise_steps=10000):
         J = self.J.copy()
+        lambda_P = self.lambda_P.copy()
+        self.lambda_P[:] = np.mean(self.lambda_P)
         self.J = np.zeros_like(self.J)
         self.J[1:,1:] = J0
         self.J = self.J*(1-np.eye(self.J.shape[0]))
@@ -147,6 +149,7 @@ class CPM:
         self.sample.n_steps = n_initialise_steps
         self.sample.do_steps()
         self.J = J.copy()
+        self.lambda_P = lambda_P.copy()
         self.get_J_diff()
         print("initialized")
 

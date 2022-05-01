@@ -51,7 +51,7 @@ if __name__ == "__main__":
     cpm.J = -adhesion_vals_full * 8
     cpm.get_J_diff()
     t0 = time.time()
-    cpm.simulate(int(1e6), int(1000), initialize=True, J0=-8)
+    cpm.simulate(int(1e7), int(1000), initialize=True, J0=-8)
     # t1 = time.time()
     cpm.save_simulation("results/stiff",str(iter_i))
 
