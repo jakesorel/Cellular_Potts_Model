@@ -38,7 +38,6 @@ if __name__ == "__main__":
 
     perim_neighbour_reduced = np.array([[0,1],[1,0],[1,1]])
 
-
     def get_adj(I_sparse):
         I = I_sparse.toarray()
         vals = []
@@ -48,7 +47,7 @@ if __name__ == "__main__":
             mask = I!=rolled
             vals += list(I[mask])
             neighs += list(rolled[mask])
-        adj = sparse.csr_matrix(sparse.coo_matrix(([True]*len(vals),(vals,neighs))))
+        adj = sparse.csr_matrix(sparse.coo_matrix(([True]*len(vals),(vals,neighs)),shape=(len(c_types),len(c_types))))
         adj += adj.T
         return adj
 
