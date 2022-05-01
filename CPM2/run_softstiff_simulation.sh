@@ -18,6 +18,7 @@ source activate synmorph
 
 python run_soft_simulation.py "$i_iter"
 python run_stiff_simulation.py "$i_iter"
+python run_analysis.py "$i_iter"
 
 #python run_cluster_bootstrap.py "$1" "$2"
 

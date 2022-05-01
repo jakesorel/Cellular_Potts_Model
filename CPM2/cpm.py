@@ -146,11 +146,12 @@ class CPM:
         self.t = np.arange(n_step)
         self.t_save = self.t[::self.skip]
         self.n_save = len(self.t_save)
-        self.I_save = np.zeros((self.n_save,self.num_x,self.num_y),dtype=int)
+        self.I_save = np.zeros((self.n_save+1,self.num_x,self.num_y),dtype=int)
         n_steps = int(n_step/self.skip)
+        self.I_save[0] = self.I0.copy()
         for i in range(n_steps):
             self.sample.do_steps()
-            self.I_save[i] = self.I.copy()
+            self.I_save[i+1] = self.I.copy()
             print("%.1f"%(100*(i/n_steps)))
 
     def save_simulation(self,dir_path,name):
@@ -164,7 +165,7 @@ class CPM:
 
 
 
-    def generate_image(self,I, res = 8,col_dict={"E":"red","T":"blue"},background=np.array([0,0,0,0.6])):
+    def generate_image(self,I, res = 8,col_dict={"E":"red","T":"blue","X":"green"},background=np.array([0,0,0,0.6])):
         I_scale = np.repeat(np.repeat(I, res, axis=0), res, axis=1)
         Im = np.zeros([I.shape[0] * res, I.shape[1] * res, 4]).astype(float)
         Im[:, :, :] = background

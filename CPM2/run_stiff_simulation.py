@@ -14,6 +14,11 @@ if __name__ == "__main__":
     if not os.path.exists("results/stiff"):
         os.mkdir("results/stiff")
 
+    if not os.path.exists("results/plots"):
+        os.mkdir("results/plots")
+
+    if not os.path.exists("results/plots/stiff"):
+        os.mkdir("results/plots/stiff")
 
     iter_i = int(sys.argv[1])
 
@@ -49,6 +54,12 @@ if __name__ == "__main__":
     cpm.simulate(int(1e7),int(1000))
     # t1 = time.time()
     cpm.save_simulation("results/stiff",str(iter_i))
+
+    fig, ax = plt.subplots()
+    ax.imshow(cpm.generate_image(cpm.I, res=8, col_dict={1: "red", 2: "blue", 3: "green"}))
+    ax.axis("off")
+    fig.savefig("results/plots/stiff/%d.pdf"%iter_i,dpi=300)
+
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()

@@ -14,7 +14,11 @@ if __name__ == "__main__":
     if not os.path.exists("results/soft"):
         os.mkdir("results/soft")
 
+    if not os.path.exists("results/plots"):
+        os.mkdir("results/plots")
 
+    if not os.path.exists("results/plots/soft"):
+        os.mkdir("results/plots/soft")
     iter_i = int(sys.argv[1])
 
     lambda_A = 1
@@ -45,13 +49,18 @@ if __name__ == "__main__":
     adhesion_vals_full[0] = b_e
     adhesion_vals_full[:,0] = b_e
     adhesion_vals_full[0,0] = 0
-    cpm.J = -adhesion_vals_full * 20*0.4
+    cpm.J = -adhesion_vals_full * 8
     cpm.get_J_diff()
     t0 = time.time()
     cpm.simulate(int(1e7),int(1000))
 
     # t1 = time.time()
     cpm.save_simulation("results/soft",str(iter_i))
+
+    fig, ax = plt.subplots()
+    ax.imshow(cpm.generate_image(cpm.I, res=8, col_dict={1: "red", 2: "blue", 3: "green"}))
+    ax.axis("off")
+    fig.savefig("results/plots/soft/%d.pdf"%iter_i,dpi=300)
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()

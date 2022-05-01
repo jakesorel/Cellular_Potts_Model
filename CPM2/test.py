@@ -66,7 +66,7 @@ adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_
 adhesion_vals_full[0] = b_e
 adhesion_vals_full[:,0] = b_e
 adhesion_vals_full[0,0] = 0
-cpm.J = -adhesion_vals_full*20*0.4
+cpm.J = -adhesion_vals_full*20*0.4*0
 # lambda_mult = np.zeros((len(cpm.lambda_P),len(cpm.lambda_P)))
 # for i in range(len(cpm.lambda_P)):
 #     lambda_mult[i:] = cpm.lambda_P
@@ -75,10 +75,12 @@ cpm.J = -adhesion_vals_full*20*0.4
 
 cpm.get_J_diff()
 t0 = time.time()
-cpm.simulate(int(2e5),int(20))
+cpm.simulate(int(2e4),int(20))
 t1 = time.time()
-# cpm.save_simulation("results","test_sim_soft")
+cpm.save_simulation("results","test_sim_soft")
 print(t1-t0)
+
+
 cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
 cpm.animate()
 
