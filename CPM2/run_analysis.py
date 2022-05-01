@@ -162,7 +162,7 @@ if __name__ == "__main__":
         n_ctypes = np.zeros((len(I_save_sparse),3),dtype=int)
         for t, I_sparse_full in enumerate(I_save_sparse):
             I_sparse,c_types_i = remove_non_attached(I_sparse_full)
-            n_ctypes[t] = np.bincount(c_types_i)[1:]
+            n_ctypes[t] = np.bincount(c_types_i,minlength=4)[1:]
             adj = get_adj(I_sparse)
             conn_comp_t[t] = get_conn_comp(adj)
             n_external_1_t[t] = get_n_external(adj,c_types_i)
