@@ -44,7 +44,7 @@ if __name__ == "__main__":
     params = {"A0":[A0,A0,A0],
               "P0":[P0,P0,P0],
               "lambda_A":[lambda_A,lambda_A,lambda_A],
-              "lambda_P":[lambda_P,lambda_P,lambda_P*0.5],
+              "lambda_P":[lambda_P,lambda_P,lambda_P],
               "W":W,
               "T":15}
     cpm = CPM(params)
@@ -61,22 +61,22 @@ if __name__ == "__main__":
     cpm.J = -adhesion_vals_full * 8
     cpm.get_J_diff()
     t0 = time.time()
-    cpm.simulate(int(1e7), int(1000), initialize=True, J0=-8)
+    cpm.simulate(int(1e6), int(1000), initialize=True, J0=-8)
 
     # t1 = time.time()
-    cpm.save_simulation("results/soft",str(iter_i))
+    cpm.save_simulation("results/stiff",str(iter_i))
 
     fig, ax = plt.subplots()
     ax.imshow(cpm.generate_image(cpm.I, res=8, col_dict={1: "red", 2: "blue", 3: "green"}))
     ax.axis("off")
-    fig.savefig("results/plots/soft/%d.pdf"%iter_i,dpi=300)
+    fig.savefig("results/plots/stiff/%d.pdf"%iter_i,dpi=300)
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()
     params2 = {"A0":[A0,A0,A0],
               "P0":[P0,P0,P0],
               "lambda_A":[lambda_A,lambda_A,lambda_A],
-              "lambda_P":[lambda_P,lambda_P,lambda_P],
+              "lambda_P":[lambda_P,lambda_P,lambda_P*0.5],
               "W":W,
               "T":15}
     cpm2 = CPM(params2)
@@ -90,9 +90,9 @@ if __name__ == "__main__":
     cpm2.J_diff = cpm.J_diff.copy()
     cpm2.simulate(int(1e6), int(1000), initialize=False)
     # t1 = time.time()
-    cpm2.save_simulation("results/stiff",str(iter_i))
+    cpm2.save_simulation("results/soft",str(iter_i))
 
     fig, ax = plt.subplots()
     ax.imshow(cpm2.generate_image(cpm2.I, res=8, col_dict={1: "red", 2: "blue", 3: "green"}))
     ax.axis("off")
-    fig.savefig("results/plots/stiff/%d.pdf"%iter_i,dpi=300)
+    fig.savefig("results/plots/soft/%d.pdf"%iter_i,dpi=300)
