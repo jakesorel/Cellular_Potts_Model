@@ -39,8 +39,8 @@ W = np.array([[b_e,b_e,b_e,b_e],
               [b_e,0.505116,0.420959,0.529589]])*8
 
 lambda_A = 1
-lambda_P = 0.4
-lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.2]
+lambda_P = 0.3
+lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.1]
 P0 = 30
 # lambda_mult = np.zeros((4,4))
 # for i in range(4):
@@ -66,7 +66,7 @@ adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_
 adhesion_vals_full[0] = b_e
 adhesion_vals_full[:,0] = b_e
 adhesion_vals_full[0,0] = 0
-cpm.J = -adhesion_vals_full*8
+cpm.J = -adhesion_vals_full*5
 # lambda_mult = np.sqrt(cpm.lambda_P * np.expand_dims(cpm.lambda_P,1))
 # lambda_mult *= (1 - np.eye(cpm.lambda_P.size))
 # lambda_mult /= np.max(lambda_mult)

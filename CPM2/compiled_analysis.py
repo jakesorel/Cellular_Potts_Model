@@ -10,7 +10,7 @@ def load_compiled_data(folder):
     for file in files:
         index = int(file.split(".csv")[0])
         df = pd.read_csv(folder+"/"+file,index_col=0)
-        df = df[::50]
+        df = df[::25]
         df["sim"] = index
         df_all = pd.concat((df_all,df))
     df_all.index = np.arange(df_all.shape[0])
@@ -56,7 +56,7 @@ fig.show()
 
 
 soft_df = load_compiled_data("results/compiled/soft")
-soft_df["X_external"] = soft_df["X_ex3"] == soft_df["N_X"]
+soft_df["X_external"] = soft_df["X_ex"] == soft_df["N_X"]
 # soft_df["X_external"] = soft_df["X_ex3"] == 6
 soft_df["N"] = soft_df["N_X"] +soft_df["N_E"] + soft_df["N_T"]
 
@@ -64,7 +64,7 @@ soft_df["E_external"] = soft_df["E_ex3"] == soft_df["N_E"]
 soft_df["T_external"] = soft_df["T_ex3"] == soft_df["N_T"]
 
 stiff_df = load_compiled_data("results/compiled/stiff")
-stiff_df["X_external"] = stiff_df["X_ex3"] == stiff_df["N_X"]
+stiff_df["X_external"] = stiff_df["X_ex"] == stiff_df["N_X"]
 # stiff_df["X_external"] = stiff_df["X_ex3"] == 6
 stiff_df["N"] = stiff_df["N_X"] +stiff_df["N_E"] + stiff_df["N_T"]
 
@@ -73,8 +73,8 @@ stiff_df["E_external"] = stiff_df["E_ex3"] == stiff_df["N_E"]
 stiff_df["T_external"] = stiff_df["T_ex3"] == stiff_df["N_T"]
 
 fig, ax = plt.subplots()
-sns.lineplot(x="t",y="X_ex",data=soft_df,ax=ax,label="Soft")
-sns.lineplot(x="t",y="X_ex",data=stiff_df,ax=ax,label="Stiff")
+sns.lineplot(x="t",y="E_cc",data=soft_df,ax=ax,label="Soft")
+sns.lineplot(x="t",y="E_cc",data=stiff_df,ax=ax,label="Stiff")
 # sns.lineplot(x="t",y="E_cc",data=soft_df,ax=ax,label="Soft")
 # sns.lineplot(x="t",y="E_cc",data=stiff_df,ax=ax,label="Stiff")
 # ax.set(xlim=(0,3e6))
