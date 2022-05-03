@@ -61,7 +61,7 @@ if __name__ == "__main__":
     cpm.J = -adhesion_vals_full * 8
     cpm.get_J_diff()
     t0 = time.time()
-    cpm.simulate(int(1e6), int(1000), initialize=True, J0=-8)
+    cpm.simulate(int(5e5), int(1000), initialize=True, J0=-8)
 
     # t1 = time.time()
     cpm.save_simulation("results/stiff",str(iter_i))
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     cpm2.assign_AP()
     cpm2.J = cpm.J.copy()
     cpm2.J_diff = cpm.J_diff.copy()
-    cpm2.simulate(int(1e6), int(1000), initialize=False)
+    cpm2.simulate(int(5e5), int(1000), initialize=False)
     # t1 = time.time()
     cpm2.save_simulation("results/soft",str(iter_i))
 
