@@ -10,7 +10,7 @@ def load_compiled_data(folder):
     for file in files:
         index = int(file.split(".csv")[0])
         df = pd.read_csv(folder+"/"+file,index_col=0)
-        df = df[:20]
+        df = df
         df["sim"] = index
         df_all = pd.concat((df_all,df))
     df_all.index = np.arange(df_all.shape[0])
