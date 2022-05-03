@@ -32,7 +32,7 @@ if __name__ == "__main__":
     lambda_A = 1
     lambda_P = 0.4
     A0 = 30
-    P0 = 0
+    P0 = 30
     b_e = 0
 
     W = np.array([[b_e,b_e,b_e,b_e],
