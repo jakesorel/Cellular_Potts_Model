@@ -36,24 +36,24 @@ b_e = 0
 W = np.array([[b_e,b_e,b_e,b_e],
               [b_e,1.911305,0.494644,0.505116],
               [b_e,0.494644,2.161360,0.420959],
-              [b_e,0.505116,0.420959,0.529589]])*120
+              [b_e,0.505116,0.420959,0.529589]])*8
 
 lambda_A = 1
 lambda_P = 0.4
-lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.3]
+lambda_Ps = [0,lambda_P,lambda_P,lambda_P*0.2]
 P0 = 30
-lambda_mult = np.zeros((4,4))
-for i in range(4):
-    lambda_mult[i:] = lambda_Ps[i]
-# lambda_mult[0] = lambda_Ps
-W *= lambda_mult
+# lambda_mult = np.zeros((4,4))
+# for i in range(4):
+#     lambda_mult[i:] = lambda_Ps[i]
+# # lambda_mult[0] = lambda_Ps
+# W *= lambda_mult
 
 # W = W.T
 
 params = {"A0":[A0,A0,A0],
           "P0":[P0,P0,P0],
           "lambda_A":[lambda_A,lambda_A,lambda_A],
-          "lambda_P":lambda_Ps[1:],
+          "lambda_P":[lambda_P,lambda_P,lambda_P*0.2],
           "W":W,
           "T":15}
 # np.random.seed(2022)
@@ -66,16 +66,20 @@ adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % iter_i).get("adhesion_
 adhesion_vals_full[0] = b_e
 adhesion_vals_full[:,0] = b_e
 adhesion_vals_full[0,0] = 0
-cpm.J = -adhesion_vals_full*20*0.4*0
+cpm.J = -adhesion_vals_full*8
+# lambda_mult = np.sqrt(cpm.lambda_P * np.expand_dims(cpm.lambda_P,1))
+# lambda_mult *= (1 - np.eye(cpm.lambda_P.size))
+# lambda_mult /= np.max(lambda_mult)
+
 # lambda_mult = np.zeros((len(cpm.lambda_P),len(cpm.lambda_P)))
 # for i in range(len(cpm.lambda_P)):
 #     lambda_mult[i:] = cpm.lambda_P
-# # lambda_mult[0] = lambda_Ps
+# lambda_mult[0] = lambda_Ps
 # cpm.J *= lambda_mult
 
 cpm.get_J_diff()
 t0 = time.time()
-cpm.simulate(int(2e4),int(20),initialize=True,J0 = -8)
+cpm.simulate(int(6e4),int(20),initialize=True,J0 = -8)
 t1 = time.time()
 # cpm.save_simulation("results","test_sim_soft")
 # print(t1-t0)
