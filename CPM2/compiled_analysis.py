@@ -10,7 +10,7 @@ def load_compiled_data(folder):
     for file in files:
         index = int(file.split(".csv")[0])
         df = pd.read_csv(folder+"/"+file,index_col=0)
-        df = df[::50]
+        df = df[:20]
         df["sim"] = index
         df_all = pd.concat((df_all,df))
     df_all.index = np.arange(df_all.shape[0])
@@ -66,8 +66,8 @@ stiff_df["E_external"] = stiff_df["E_ex3"] == stiff_df["N_E"]
 stiff_df["T_external"] = stiff_df["T_ex3"] == stiff_df["N_T"]
 
 fig, ax = plt.subplots()
-sns.lineplot(x="t",y="T_cc",data=soft_df,ax=ax,label="Soft")
-sns.lineplot(x="t",y="T_cc",data=stiff_df,ax=ax,label="Stiff")
+sns.lineplot(x="t",y="X_external",data=soft_df,ax=ax,label="Soft")
+sns.lineplot(x="t",y="X_external",data=stiff_df,ax=ax,label="Stiff")
 # sns.lineplot(x="t",y="X_cc",data=soft_df,ax=ax,label="Soft")
 # sns.lineplot(x="t",y="X_cc",data=stiff_df,ax=ax,label="Stiff")
 # ax.set(xlim=(0,3e6))
