@@ -73,6 +73,7 @@ if __name__ == "__main__":
     # print(t1-t0)
     # cpm.generate_image_t(res=4,col_dict={1:"red",2:"blue",3:"green"})
     # cpm.animate()
+
     params2 = {"A0":[A0,A0,A0],
               "P0":[P0,P0,P0],
               "lambda_A":[lambda_A,lambda_A,lambda_A],
