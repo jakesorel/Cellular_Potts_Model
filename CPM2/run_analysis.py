@@ -249,3 +249,15 @@ if __name__ == "__main__":
 
 
 
+
+    I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2"%iter_i, 'rb'))
+
+    cc,n_ctypes,next,next2,next3 = get_top_values_t(I_save_sparse)
+
+    df = pd.DataFrame({"t":np.arange(cc.shape[0])*1e4,
+                       "N_E":n_ctypes[:,0],"N_T":n_ctypes[:,1],"N_X":n_ctypes[:,2],
+                       "E_cc":cc[:,0],"T_cc":cc[:,1],"X_cc":cc[:,2],
+                  "E_ex":next[:,0],"T_ex":next[:,1],"X_ex":next[:,2],
+                  "E_ex2":next2[:,0],"T_ex2":next2[:,1],"X_ex2":next2[:,2],
+                  "E_ex3":next3[:,0],"T_ex3":next3[:,1],"X_ex3":next3[:,2]})
+    df.to_csv("results/compiled/scrambled/%d.csv"%iter_i)
