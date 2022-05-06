@@ -131,3 +131,9 @@ if __name__ == "__main__":
     ax.imshow(cpm3.generate_image(cpm3.I, res=8, col_dict={1: "red", 2: "blue", 3: "green"}))
     ax.axis("off")
     fig.savefig("results/plots/scrambled/%d.pdf" % iter_i, dpi=300)
+
+
+
+
+
+    # print(t1-t0)
