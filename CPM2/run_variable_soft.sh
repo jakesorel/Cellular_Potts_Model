@@ -2,10 +2,10 @@
 
 #Submit this script with: sbatch thefilename
 
-#SBATCH --time=1:30:00   # walltime
-#SBATCH -J "cpm_softstiff"   # job name
-#SBATCH --output=bash_out/output_softstiff.out
-#SBATCH --error=bash_out/error_softstiff.out
+#SBATCH --time=4:30:00   # walltime
+#SBATCH -J "cpm_variable_soft"   # job name
+#SBATCH --output=bash_out/output_variable_soft.out
+#SBATCH --error=bash_out/error_variable_soft.out
 #SBATCH -n 1
 #SBATCH --partition=cpu
 #SBATCH --mem=2G
