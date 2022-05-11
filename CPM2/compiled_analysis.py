@@ -265,6 +265,15 @@ ax.set(ylim=(0,None),xlim=(-0.5,1.5))
 fig.subplots_adjust(bottom=0.3,top=0.8,left=0.5,right=0.8)
 fig.savefig("plots/XEN externalisation time.pdf")
 
+
+"""
+Scoring simulations
+"""
+
+
+
+
+
 from scipy.stats import expon
 
 

@@ -16,7 +16,7 @@ source activate synmorph
 
 ((i_iter =  ${SLURM_ARRAY_TASK_ID} + "$1"*"$2"))
 
-python run_analysis.py "$i_iter"
+python run_analysis_new.py "$i_iter"
 #python run_cluster_bootstrap.py "$1" "$2"
 
 #
