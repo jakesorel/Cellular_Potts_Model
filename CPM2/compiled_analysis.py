@@ -163,13 +163,26 @@ fig.savefig("plots/percentage_sorted.pdf",dpi=300)
 adhesion_vals_full = np.load("adhesion_matrices/%i.npz" % 1).get("adhesion_vals")
 
 fig, ax = plt.subplots(figsize=(4,4))
-ax.imshow(adhesion_vals_full[1:,1:],cmap=plt.cm.hot)
+ax.imshow(adhesion_vals_full[1:,1:],cmap=plt.cm.hot,vmin=0,vmax=4.54841)
 ax.axis("off")
-sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmax=adhesion_vals_full.max(), vmin=adhesion_vals_full.min()))
+sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0,vmax=4.54841))
 cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.073, aspect=12, orientation="vertical")
 cl.set_label(r"$J_{ij}$")
 fig.subplots_adjust(left=0.3,right=0.7)
 fig.savefig("plots/adhesion_matrix_sample.pdf",dpi=300)
+
+
+adhesion_vals_full = np.load("adhesion_matrices_scrambled/%i.npz" % 22).get("adhesion_vals")
+
+fig, ax = plt.subplots(figsize=(4,4))
+ax.imshow(adhesion_vals_full[1:,1:],cmap=plt.cm.hot,vmin=0,vmax=4.54841)
+ax.axis("off")
+sm = plt.cm.ScalarMappable(cmap=plt.cm.hot, norm=plt.Normalize(vmin=0,vmax=4.54841))
+cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.073, aspect=12, orientation="vertical")
+cl.set_label(r"$J_{ij}$")
+fig.subplots_adjust(left=0.3,right=0.7)
+fig.savefig("plots/adhesion_matrix_scrambled_sample.pdf",dpi=300)
+
 
 t_span = stiff_df["t"].values
 
