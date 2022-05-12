@@ -389,7 +389,7 @@ if __name__ == "__main__":
     #                    "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
     #                    "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
     #                    "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-    #                    "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+    #                    "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2],
     #                    "conformation":conformation})
     # df.to_csv("results/compiled/soft/%d.csv" % iter_i)
 
@@ -404,7 +404,7 @@ if __name__ == "__main__":
                        "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
                        "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
                        "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2],
                        "conformation":conformation})
     df.to_csv("results/compiled/stiff/%d.csv" % iter_i)
 
@@ -420,6 +420,6 @@ if __name__ == "__main__":
                        "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
                        "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
                        "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2],
                        "conformation":conformation})
     df.to_csv("results/compiled/scrambled/%d.csv" % iter_i)
