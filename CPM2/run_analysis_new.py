@@ -154,6 +154,69 @@ if __name__ == "__main__":
         return np.array([ES_external, TS_external, XEN_external])
 
 
+    x_f,y_f = np.mgrid[:100,:100] + 0.5
+
+    def enveloping_score(I_sparse,c_types_i):
+        C = c_types_i.take(I_sparse.toarray())
+        is_enveloping = np.zeros((3),dtype=bool)
+        for i in range(3):
+            j = i+1
+            mid_pt = np.array(center_of_mass(C==j))
+            mid_pt_coord = np.round(mid_pt).astype(int)
+            mid_pt_type = C[mid_pt_coord[0],mid_pt_coord[1]]
+            is_enveloping[i] = mid_pt_type!=j
+        return is_enveloping
+
+    def get_c_type_adj(adj,c_types_i):
+        edges = adj.nonzero()
+        c_edges = (c_types_i.take(edges[0]),c_types_i.take(edges[1]))
+        adj_c = sparse.csr_matrix(sparse.coo_matrix(([True]*len(c_edges[0]),c_edges)))
+        return adj_c
+
+    def get_conformation_score(env_score_i,cc_i,adj,c_types_i):
+        n_env = np.sum(env_score_i)
+        conformation = 16
+        if n_env == 0:
+            if np.all(cc_i == 1):
+                conformation = 0
+        elif n_env == 1:
+            c_type_env = env_score_i@np.arange(1,4)
+            if (cc_i[np.mod(c_type_env,3)] ==1 )*(cc_i[np.mod(c_type_env-2,3)]==1): #if the other two cell types are contiguous i.e. conn comp = 1
+                adj_reduced = adj[c_types_i==c_type_env]
+                c_types_flanking = np.zeros((adj_reduced.shape[0],4),dtype=bool)
+                adj_reduced_nonzero = adj_reduced.nonzero()
+                c_types_flanking[adj_reduced_nonzero[0],c_types_i.take(adj_reduced_nonzero)]=True
+                c_types_flanking_excluding_env = c_types_flanking[:,np.arange(4)!=c_type_env]
+                flanking_boundary =c_types_flanking[:,0]
+                if flanking_boundary.all():
+                    conformation = 6+c_type_env
+                else:
+                    n_flanking_types = c_types_flanking.sum(axis=1)
+                    if (n_flanking_types[~flanking_boundary]!=1).all(): ##if there isn't a cell surrounded exclusively by a single cell type.
+                        n_flanking_types_nonboundary_nonself = c_types_flanking_excluding_env[:, 1:].sum(axis=1)
+                        if (n_flanking_types_nonboundary_nonself[~flanking_boundary]==2).any(): #if any of the non-boundary cells are surrounded by exactly two OTHER cell types
+                            flanking_other_ctypes_count = c_types_flanking_excluding_env[:, 1:].sum(axis=0)
+                            max_flanking_other = np.argmax(flanking_other_ctypes_count)
+                            conformation = 10 + (c_type_env -1)*2 + max_flanking_other
+                        else:
+                            conformation = 6+c_type_env
+        elif n_env == 2:
+            c_type_3 = np.nonzero(~env_score_i)[0][0]+1
+            if cc_i[c_type_3-1] == 1:
+                c_type_env1, c_type_env2 = np.nonzero(env_score_i)[0]
+                c_type_env1 += 1
+                c_type_env2 += 1
+                edges = adj.nonzero()
+                c_type_adj = sparse.coo_matrix(([True]*len(edges[0]),(c_types_i.take(edges[0]),c_types_i.take(edges[1])))).todense()
+                if c_type_adj[c_type_env1,0]*c_type_adj[c_type_env1,c_type_env2]*(~c_type_adj[c_type_env1,c_type_3])*c_type_adj[c_type_env2,c_type_3]:
+                    conformation = 1 + (c_type_env1-1)*2 + int(c_type_3<c_type_env2)
+                elif c_type_adj[c_type_env2,0]*c_type_adj[c_type_env2,c_type_env1]*(~c_type_adj[c_type_env2,c_type_3])*c_type_adj[c_type_env1,c_type_3]:
+                    conformation = 1 + (c_type_env2 - 1) * 2 + int(c_type_3 < c_type_env1)
+
+        return conformation
+
+
+
     def get_top_values_t(I_save_sparse):
         conn_comp_t = np.zeros((len(I_save_sparse), 3), dtype=int)
         n_external_1_t = np.zeros((len(I_save_sparse), 3), dtype=int)
@@ -161,6 +224,8 @@ if __name__ == "__main__":
         n_external_3_t = np.zeros((len(I_save_sparse), 3), dtype=int)
         n_ctypes = np.zeros((len(I_save_sparse), 3), dtype=int)
         external_direction_t = np.zeros((len(I_save_sparse), 3), dtype=int)
+        env_score_t = np.zeros((len(I_save_sparse),3),dtype=bool)
+        conformation_t = np.zeros((len(I_save_sparse)),dtype=int)
         for t, I_sparse_full in enumerate(I_save_sparse):
             I_sparse, c_types_i = remove_non_attached(I_sparse_full)
             n_ctypes[t] = np.bincount(c_types_i, minlength=4)[1:]
@@ -170,7 +235,9 @@ if __name__ == "__main__":
             n_external_2_t[t] = get_n_external_2(adj, c_types_i)
             n_external_3_t[t] = get_n_external_3(I_sparse, c_types_i)
             external_direction_t[t] = get_external_direction(adj, c_types_i, n_ctypes[t])
-        return conn_comp_t, n_ctypes, n_external_1_t, n_external_2_t, n_external_3_t,external_direction_t
+            env_score_t[t] = enveloping_score(I_sparse, c_types_i)
+            conformation_t[t] = get_conformation_score(env_score_t[t], conn_comp_t[t], adj, c_types_i)
+        return conn_comp_t, n_ctypes, n_external_1_t, n_external_2_t, n_external_3_t,external_direction_t,env_score_t,conformation_t
 
 
     def types_xy_n_external(ctype_i, ctype_j, c_types_i, adj):
@@ -249,60 +316,86 @@ if __name__ == "__main__":
     15 X(T)-E:     (1,1,X),(X,X,-1)
 
     16 unsorted:   if not any of above.
+    
+    A different way to score. 
+    
+    Consider lines through the image. These should distinguish between the options. 
+    
+    Alternatively:
+        If the centre of mass of a compartment lies within its own bounds, then it cannot be enveloping. 
+        Distinguishing between classes 3 and 4 (where two cell types are non-enveloping): 
+            Measure the number of cell types that each cell of the enveloping class is bound to (ignoring boundary). 
+            
+            If the other two cell types are contiguous: 
+                If any cells don't flank a boundary: 
+                    Unsorted if any of these cells are surronded by exclusively one OTHER cell type
+                    Class 4: if surrounded by exactly two OTHER cell types 
+                    Class 3: otherwise (i.e. surrounded by one or more cell types AND a similar cell). 
+                Else:
+                    Class 4
+            Else:
+                Unsorted
+                
+        Distinguishing between Class 2: 
+            Consider (i) X(E(T)) vs (ii)  E(X(T))
+                If X flanks boundary, E and NOT T; E flanks T --> (i)
+                If E flanks boundary, X and not T; X flanks T --> (ii)
+                If neither --> unsorted
+               {Note that this ignores situtations where e.g. one half of T is surrounded by X and one half surrounded by E. 
+    
     """
-
-    score_matrix = np.array((((1,1,1),(0,0,0)),
-                    ((np.nan,1,np.nan),(1,-1,-1)),
-                    ((np.nan,np.nan,1),(-1,1,1)),
-                    ((1,np.nan,np.nan),(-1,-1,-1)),
-                    ((np.nan,np.nan,1),(1,1,1)),
-                    ((1,np.nan,np.nan),(-1,-1,1)),
-                    ((np.nan,1,np.nan),(1,1,-1)),
-                    ((1,1,np.nan),(np.nan,-1,-1)),
-                    ((1,np.nan,1),(-1,np.nan,1)),
-                    ((np.nan,1,1),(1,1,np.nan)),
-                    ((1,np.nan,1),(-1,np.nan,np.nan)),
-                    ((1,1,np.nan),(np.nan,-1,np.nan)),
-                    ((np.nan,1,1),(np.nan,1,np.nan)),
-                    ((1,np.nan,1),(np.nan,np.nan,1)),
-                    ((np.nan,1,1),(1,np.nan,np.nan)),
-                    ((1,1,np.nan),(np.nan,np.nan,-1))))
-
-    n_non_placeholders_score_matrix = np.sum(~np.isnan(score_matrix),axis=-1)
-
-    def conformation_scorer(cc_i,ext_dir_i):
-        index = 0
-        cont = True
-        while (index<16)*(cont):
-            cc_true = np.nansum(cc_i == score_matrix[index][0]) == n_non_placeholders_score_matrix[index][0]
-            ext_dir_true = np.nansum(ext_dir_i == score_matrix[index][1]) == n_non_placeholders_score_matrix[index][1]
-            if cc_true*ext_dir_true:
-                cont=False
-            else:
-                index+=1
-        return index
-
-
-    I_save_sparse = cPickle.load(bz2.BZ2File("results/soft/%d.pbz2" % iter_i, 'rb'))
-
-    cc, n_ctypes, next, next2, next3,ext_dir = get_top_values_t(I_save_sparse)
-    conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
-
-    df = pd.DataFrame({"t": np.arange(cc.shape[0]) * 1e4,
-                       "N_E": n_ctypes[:, 0], "N_T": n_ctypes[:, 1], "N_X": n_ctypes[:, 2],
-                       "E_cc": cc[:, 0], "T_cc": cc[:, 1], "X_cc": cc[:, 2],
-                       "E_ex": next[:, 0], "T_ex": next[:, 1], "X_ex": next[:, 2],
-                       "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
-                       "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
-                       "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-                       "conformation":conf})
-    df.to_csv("results/compiled/soft/%d.csv" % iter_i)
+    #
+    # score_matrix = np.array((((1,1,1),(0,0,0)),
+    #                 ((np.nan,1,np.nan),(1,-1,-1)),
+    #                 ((np.nan,np.nan,1),(-1,1,1)),
+    #                 ((1,np.nan,np.nan),(-1,-1,-1)),
+    #                 ((np.nan,np.nan,1),(1,1,1)),
+    #                 ((1,np.nan,np.nan),(-1,-1,1)),
+    #                 ((np.nan,1,np.nan),(1,1,-1)),
+    #                 ((1,1,np.nan),(np.nan,-1,-1)),
+    #                 ((1,np.nan,1),(-1,np.nan,1)),
+    #                 ((np.nan,1,1),(1,1,np.nan)),
+    #                 ((1,np.nan,1),(-1,np.nan,np.nan)),
+    #                 ((1,1,np.nan),(np.nan,-1,np.nan)),
+    #                 ((np.nan,1,1),(np.nan,1,np.nan)),
+    #                 ((1,np.nan,1),(np.nan,np.nan,1)),
+    #                 ((np.nan,1,1),(1,np.nan,np.nan)),
+    #                 ((1,1,np.nan),(np.nan,np.nan,-1))))
+    #
+    # n_non_placeholders_score_matrix = np.sum(~np.isnan(score_matrix),axis=-1)
+    #
+    # def conformation_scorer(cc_i,ext_dir_i):
+    #     index = 0
+    #     cont = True
+    #     while (index<16)*(cont):
+    #         cc_true = np.nansum(cc_i == score_matrix[index][0]) == n_non_placeholders_score_matrix[index][0]
+    #         ext_dir_true = np.nansum(ext_dir_i == score_matrix[index][1]) == n_non_placeholders_score_matrix[index][1]
+    #         if cc_true*ext_dir_true:
+    #             cont=False
+    #         else:
+    #             index+=1
+    #     return index
+    #
+    #
+    # I_save_sparse = cPickle.load(bz2.BZ2File("results/soft/%d.pbz2" % iter_i, 'rb'))
+    #
+    # cc, n_ctypes, next, next2, next3,ext_dir,env_score,conformation = get_top_values_t(I_save_sparse)
+    # # conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
+    #
+    # df = pd.DataFrame({"t": np.arange(cc.shape[0]) * 1e4,
+    #                    "N_E": n_ctypes[:, 0], "N_T": n_ctypes[:, 1], "N_X": n_ctypes[:, 2],
+    #                    "E_cc": cc[:, 0], "T_cc": cc[:, 1], "X_cc": cc[:, 2],
+    #                    "E_ex": next[:, 0], "T_ex": next[:, 1], "X_ex": next[:, 2],
+    #                    "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
+    #                    "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
+    #                    "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
+    #                    "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+    #                    "conformation":conformation})
+    # df.to_csv("results/compiled/soft/%d.csv" % iter_i)
 
     I_save_sparse = cPickle.load(bz2.BZ2File("results/stiff/%d.pbz2" % iter_i, 'rb'))
-
-
-    cc, n_ctypes, next, next2, next3,ext_dir = get_top_values_t(I_save_sparse)
-    conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
+    cc, n_ctypes, next, next2, next3,ext_dir,env_score,conformation = get_top_values_t(I_save_sparse)
+    # conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
 
     df = pd.DataFrame({"t": np.arange(cc.shape[0]) * 1e4,
                        "N_E": n_ctypes[:, 0], "N_T": n_ctypes[:, 1], "N_X": n_ctypes[:, 2],
@@ -311,14 +404,14 @@ if __name__ == "__main__":
                        "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
                        "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
                        "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-                       "conformation":conf})
+                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+                       "conformation":conformation})
     df.to_csv("results/compiled/stiff/%d.csv" % iter_i)
 
     I_save_sparse = cPickle.load(bz2.BZ2File("results/scrambled/%d.pbz2" % iter_i, 'rb'))
 
-
-    cc, n_ctypes, next, next2, next3,ext_dir = get_top_values_t(I_save_sparse)
-    conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
+    cc, n_ctypes, next, next2, next3,ext_dir,env_score,conformation = get_top_values_t(I_save_sparse)
+    # conf = np.array([conformation_scorer(cc_i,ext_dir_i) for (cc_i,ext_dir_i) in zip(cc,ext_dir)])
 
     df = pd.DataFrame({"t": np.arange(cc.shape[0]) * 1e4,
                        "N_E": n_ctypes[:, 0], "N_T": n_ctypes[:, 1], "N_X": n_ctypes[:, 2],
@@ -327,5 +420,6 @@ if __name__ == "__main__":
                        "E_ex2": next2[:, 0], "T_ex2": next2[:, 1], "X_ex2": next2[:, 2],
                        "E_ex3": next3[:, 0], "T_ex3": next3[:, 1], "X_ex3": next3[:, 2],
                        "ET_ext":ext_dir[:,0],"EX_ext":ext_dir[:,1],"TX_ext":ext_dir[:,2],
-                       "conformation":conf})
+                       "E_enveloping":env_score[:,0],"T_enveloping":env_score[:,1],"X_enveloping":env_score[:,2]
+                       "conformation":conformation})
     df.to_csv("results/compiled/scrambled/%d.csv" % iter_i)

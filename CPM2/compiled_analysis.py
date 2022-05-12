@@ -9,12 +9,12 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 
 
 def load_compiled_data(folder):
-    files = os.listdir(folder)[:500]
+    files = os.listdir(folder)
     df_all = pd.DataFrame()
     for file in files:
         index = int(file.split(".csv")[0])
         df = pd.read_csv(folder+"/"+file,index_col=0)
-        df = df[::10]
+        df = df[::50]
         df["sim"] = index
         df_all = pd.concat((df_all,df))
     df_all.index = np.arange(df_all.shape[0])
@@ -34,15 +34,59 @@ There probably ought to be some kind of initialisation.
 
 
 
-soft_df = load_compiled_data("results/compiled/soft")
-soft_df["X_external"] = soft_df["X_ex2"] == soft_df["N_X"]
 stiff_df = load_compiled_data("results/compiled/stiff")
 stiff_df["X_external"] = stiff_df["X_ex2"] == stiff_df["N_X"]
+stiff_df["t_million"] = stiff_df["t"]/1e6
+
+nt = int(len(stiff_df)/len(os.listdir("results/compiled/stiff")))
+stiff_conformation = np.zeros((nt,17))
+for t in range(nt):
+    bc = np.bincount(stiff_df["conformation"][t::nt],minlength=17)
+    stiff_conformation[t] = bc/bc.sum()
+
+indices = np.arange(17)
+order = np.concatenate((np.flip(np.argsort(stiff_conformation[-1,:-1])),(16,)))
+stiff_conformation_re_ordered = stiff_conformation[:,order]
+indices_reordered = indices[order]
+
+cutoff = 0.01
+
+mask = (stiff_conformation_re_ordered>cutoff).any(axis=0)
+mask[-1] = True
+
+indices_reordered = list(indices_reordered[mask][:-1]) + ["rest"] + ["disordered"]
+stiff_conformation_re_ordered= np.column_stack((stiff_conformation_re_ordered[:,mask][:,:-1],stiff_conformation_re_ordered[:,~mask].sum(axis=1),stiff_conformation_re_ordered[:,-1]))
+
+cols = plt.cm.Set2(np.arange(1/16,1,1/8))
+
+fig, ax = plt.subplots()
+ax.stackplot(np.linspace(0,1e7/1e6,nt),stiff_conformation_re_ordered.T*100,labels=indices_reordered,colors=cols)
+ax.legend()
+ax.set(xlabel="Time (Million MCS)",xlim=(0,10),ylim=(0,100))
+ax.set(ylabel="Percentage of a given structure (%)")
+fig.show()
+
+
+stiff_df["X_pex"] = stiff_df['X_ex3']/stiff_df["N_X"]
+stiff_df["E_pex"] = stiff_df['E_ex3']/stiff_df["N_E"]
+stiff_df["T_pex"] = stiff_df['T_ex3']/stiff_df["N_T"]
+
+fig, ax = plt.subplots()
+cols = ["green","red","blue"]
+for i, (color,column) in enumerate(zip(cols,["X_pex","E_pex","T_pex"])):
+    for t in range(nt):
+        ax.scatter(t,stiff_df[t::nt][column].mean(),color=color,alpha=0.4)
+fig.show()
+
+
+
+soft_df = load_compiled_data("results/compiled/soft")
+soft_df["X_external"] = soft_df["X_ex2"] == soft_df["N_X"]
+
 scrambled_df = load_compiled_data("results/compiled/scrambled")
 scrambled_df["X_external"] = scrambled_df["X_ex2"] == scrambled_df["N_X"]
 
 soft_df["t_million"] = soft_df["t"]/1e6
-stiff_df["t_million"] = stiff_df["t"]/1e6
 scrambled_df["t_million"] = scrambled_df["t"]/1e6
 
 
